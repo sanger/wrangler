@@ -10,7 +10,7 @@ from flask import Flask
 
 app = Flask(__name__)
 
-@app.route('/<tube_rack_barcode>')
+@app.route('/rack/<tube_rack_barcode>')
 def hello_world(tube_rack_barcode=None):
     print(f'tube_rack_barcode: {tube_rack_barcode}')
     # pattern = re.compile(r'DN\d{6}[A-Z]\.csv')
@@ -25,7 +25,5 @@ def hello_world(tube_rack_barcode=None):
                 print(row)
 
         print('file exists')
-
-
 
     return 'Hello, World!'
