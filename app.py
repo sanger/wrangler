@@ -10,20 +10,35 @@ from flask import Flask
 
 app = Flask(__name__)
 
-@app.route('/rack/<tube_rack_barcode>')
-def hello_world(tube_rack_barcode=None):
-    print(f'tube_rack_barcode: {tube_rack_barcode}')
+
+def _get_rack_barcode(tube_rack_barcode=None):
     # pattern = re.compile(r'DN\d{6}[A-Z]\.csv')
 
-    directory = '/Volumes/team134/0 - Rack Layout scanned FluidX Tube/'
+    # directory = '/Volumes/team134/0 - Rack Layout scanned FluidX Tube/'
+    directory = './'
+    jsonStr = ''
 
-    if isfile(join(directory, tube_rack_barcode)) and getsize(join(directory, tube_rack_barcode)) > 0:
-        rack_file = join(directory, tube_rack_barcode)
+    if isfile(join(directory, f'{tube_rack_barcode}.csv')) and getsize(join(directory, f'{tube_rack_barcode}.csv')) > 0:
+        rack_file = join(directory, f'{tube_rack_barcode}.csv')
         with open(rack_file) as open_rack_file:
             csv_plate_file = csv.reader(open_rack_file, delimiter=',')
+            layout = []
             for row in csv_plate_file:
-                print(row)
+                postition_dict = {row[0].strip(): row[1].strip()}
+                layout.append(postition_dict)
+            jsonStr = json.dumps({'rack_barcode': tube_rack_barcode, 'layout':layout})
+    else:
+        return 'File not found', 404
 
-        print('file exists')
+    if(jsonStr != ''):
+        return jsonStr, {'Content-Type': 'application/json; charset=utf-8'}
 
     return 'Hello, World!'
+
+
+@app.route('/rack/<tube_rack_barcode>')
+def get_rack_barcode(tube_rack_barcode=None):
+    try: 
+        return _get_rack_barcode(tube_rack_barcode)
+    except Exception:
+        return 'Server error', 500
