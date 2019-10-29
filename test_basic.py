@@ -6,5 +6,3 @@ def test_get():
 	app.testing = True
 	client = app.test_client()
 	assert client.get('/rack/1234').status_code == 200
-
-def test_
