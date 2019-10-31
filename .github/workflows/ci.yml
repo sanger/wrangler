@@ -13,7 +13,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Build the Docker image
-      run: docker build . --tag csv-parser:${{ github.ref:11 }}
+      run: docker build . --tag csv-parser:${GITHUB_REF:11}
     - name: Test
       run: |
-        docker run csv-parser:${{ github.ref:11 }} python -m pytest --cov=report
+        docker run csv-parser:${GITHUB_REF:11} python -m pytest --cov=report
