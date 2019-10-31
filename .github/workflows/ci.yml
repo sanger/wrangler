@@ -16,4 +16,4 @@ jobs:
       run: docker build . --tag csv-parser:${GITHUB_REF:11}
     - name: Test
       run: |
-        docker run csv-parser:${GITHUB_REF:11} python -m pytest --cov=report
+        docker run -e TUBE_RACK_DIR=. csv-parser:${GITHUB_REF:11} python -m pytest -v
