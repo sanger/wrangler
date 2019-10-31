@@ -1,44 +1,32 @@
 import csv
-import re
-from os import listdir
-from os.path import isfile, join, getsize
-import json
-import sys
-
-
 from flask import Flask
+from os.path import isfile, join, getsize
 
 app = Flask(__name__)
+app.config.from_pyfile('config.py', silent=False)
 
 
-def _get_rack_barcode(tube_rack_barcode=None):
-    # pattern = re.compile(r'DN\d{6}[A-Z]\.csv')
+def parse_tube_rack_csv(tube_rack_barcode: str) -> str:
+    file_to_find = f'{tube_rack_barcode}.csv'
+    full_path_to_find = join(app.config['TUBE_RACK_DIR'], file_to_find)
+    print(full_path_to_find)
 
-    # directory = '/Volumes/team134/0 - Rack Layout scanned FluidX Tube/'
-    directory = './'
-    jsonStr = ''
-
-    if isfile(join(directory, f'{tube_rack_barcode}.csv')) and getsize(join(directory, f'{tube_rack_barcode}.csv')) > 0:
-        rack_file = join(directory, f'{tube_rack_barcode}.csv')
-        with open(rack_file) as open_rack_file:
-            csv_plate_file = csv.reader(open_rack_file, delimiter=',')
+    if isfile(full_path_to_find) and getsize(full_path_to_find) > 0:
+        with open(full_path_to_find) as tube_rack_file:
+            tube_rack_csv = csv.reader(tube_rack_file, delimiter=',')
             layout = []
-            for row in csv_plate_file:
+            for row in tube_rack_csv:
                 postition_dict = {row[0].strip(): row[1].strip()}
                 layout.append(postition_dict)
-            jsonStr = json.dumps({'rack_barcode': tube_rack_barcode, 'layout':layout})
+        return {'rack_barcode': tube_rack_barcode, 'layout': layout}
     else:
-        return 'File not found', 404
-
-    if(jsonStr != ''):
-        return jsonStr, {'Content-Type': 'application/json; charset=utf-8'}
-
-    return 'Hello, World!'
+        return {'error': f'File ({full_path_to_find}) not found'}, 404
 
 
-@app.route('/rack/<tube_rack_barcode>')
-def get_rack_barcode(tube_rack_barcode=None):
-    try: 
-        return _get_rack_barcode(tube_rack_barcode)
-    except Exception:
-        return 'Server error', 500
+@app.route('/tube_rack/<tube_rack_barcode>')
+def get_rack_barcode(tube_rack_barcode):
+    print(app.config)
+    try:
+        return parse_tube_rack_csv(tube_rack_barcode)
+    except Exception as e:
+        return {'error': f'Server error: {e}'}, 500
