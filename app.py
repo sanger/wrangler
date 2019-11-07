@@ -7,9 +7,12 @@ app.config.from_pyfile('config.py', silent=False)
 
 
 def parse_tube_rack_csv(tube_rack_barcode: str) -> str:
+    '''
+    Parses a CSV file with the barcode provided and returns the parsed information as JSON
+    '''
     file_to_find = f'{tube_rack_barcode}.csv'
     full_path_to_find = join(app.config['TUBE_RACK_DIR'], file_to_find)
-    print(full_path_to_find)
+    print(f'Finding file: {full_path_to_find}')
 
     if isfile(full_path_to_find) and getsize(full_path_to_find) > 0:
         with open(full_path_to_find) as tube_rack_file:
@@ -25,7 +28,9 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> str:
 
 @app.route('/tube_rack/<tube_rack_barcode>')
 def get_rack_barcode(tube_rack_barcode):
-    print(app.config)
+    '''
+    A Flask route which expects a tube rack barcode
+    '''
     try:
         return parse_tube_rack_csv(tube_rack_barcode)
     except Exception as e:

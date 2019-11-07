@@ -5,6 +5,7 @@ TUBE_RACK_URL = '/tube_rack'
 VALID_FILE = 'test_valid_file'
 INVALID_FILE = 'test_invalid_file'
 
+
 @pytest.fixture
 def client():
     app.testing = True
@@ -34,5 +35,4 @@ def test_file_not_found(client):
 
 def test_invalid_file(client):
     response = client.get(f'{TUBE_RACK_URL}/{INVALID_FILE}')
-    print(response.data)
     assert response.status_code == 500
