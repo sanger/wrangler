@@ -22,7 +22,7 @@ def test_file_not_provided(client):
 def test_valid_file(client):
     output = {
         "rack_barcode": VALID_FILE,
-        "layout": [{"a1": "test_barcode"}, {"b1": "test_barcode2"}]
+        "layout": {"test_barcode": "a1", "test_barcode2": "b1"}
     }
     response = client.get(f'{TUBE_RACK_URL}/{VALID_FILE}')
     assert response.status_code == 200
