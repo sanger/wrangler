@@ -16,6 +16,13 @@ flask = "*"
 pytest = "*"
 python-dotenv = "*"
 gunicorn = "*"
+black = "*"
+mysql-connector-python = "*"
+requests = "*"
+responses = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true
