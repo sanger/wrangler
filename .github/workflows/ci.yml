@@ -11,19 +11,21 @@ jobs:
     services:
       mysql:
         image: mysql:5.7
+        ports:
+          - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: mlwarehouse_test
     steps:
       - run: env
-      - run: docker ps -qf publish=3306 | xargs docker inspect
+      - run: docker ps
       - run: docker network ls
       - uses: actions/checkout@v2
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
       - run: docker image ls
       - name: Run tests against the image
-        run: docker run docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/} python -m pytest
+        run: docker run --network host docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/} python -m pytest
       - name: Login to regitry
         run: docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
       - name: Publish image
