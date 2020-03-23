@@ -3,7 +3,10 @@ from http import HTTPStatus
 import responses
 from flask import current_app
 
+from pytest import raises
+
 from wrangler.helper import send_request_to_sequencescape, wrangle_tubes
+from wrangler.exceptions import *
 
 
 def test_send_request_to_sequencescape(app, client, mocked_responses):
@@ -66,5 +69,5 @@ def test_wrangle_tubes(app, client):
 
         assert tube_request_body == output
 
-        tube_request_body = wrangle_tubes("")
-        assert tube_request_body is None
+        with raises(TubeRackBarcodeNotFoundInDatabase):
+            tube_request_body = wrangle_tubes("")

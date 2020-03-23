@@ -7,6 +7,7 @@ from flask import current_app as app
 
 from wrangler.db import get_db
 
+from wrangler.exceptions import *
 
 def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
     """Finds and parses a CSV file with the name matching the tube rack barcode passed in.
@@ -76,6 +77,17 @@ def send_request_to_sequencescape(body: Dict) -> int:
     return response.status_code
 
 
+def validate_tubes(layout_dict, database_dict):
+    tubes_layout = list(layout_dict.keys())
+    tubes_database = list(database_dict.keys())
+
+    if (len(tubes_layout) != len(tubes_database)):
+        raise DifferentNumTubesLayoutAndDatabase()
+    if (len(set(tubes_layout) - set(tubes_database)) != 0):
+        raise DifferentBarcodesLayoutAndDatabase()
+
+    return True
+
 def wrangle_tubes(tube_rack_barcode: str) -> Dict:
     """The wrangler wrangles with the tube rack barcode provided. If the barcode exists in the MLWH,
     it tries to find and parse a CSV file with the name as the barcode. If the number of tubes in
@@ -110,8 +122,7 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
 
         # we need to compare the count of records in the MLWH with the count of valid
         # tube barcodes in the parsed CSV file - if these are not the same, exit early
-        if (len(tubes_and_coordinates['layout'].keys()) != cursor.rowcount):
-            raise ValueError('Different number of tubes between csv and mlwh entries') 
+        validate_tubes(tubes_and_coordinates['layout'],tube_sample_dict)
 
         tubes = []
         for tube_barcode, coordinate in tubes_and_coordinates["layout"].items():
@@ -124,6 +135,7 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
                     "supplier_sample_id": tube_sample_dict[tube_barcode],
                 }
             )
+        
         app.logger.debug(f"tubes: {tubes}")
         tube_rack_response = {
             "tube_rack": {"barcode": tube_rack_barcode, "tubes": tubes}
@@ -132,4 +144,4 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
         app.logger.debug(body)
         return body
     else:
-        return None
+        raise TubeRackBarcodeNotFoundInDatabase()
