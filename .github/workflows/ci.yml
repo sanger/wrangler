@@ -12,14 +12,19 @@ jobs:
       mysql:
         image: mysql:5.7
         env:
-          MYSQL_DATABASE: root
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: mlwarehouse_test
     steps:
       - run: env
       - run: docker ps -a
+      - run: docker network ls
       - uses: actions/checkout@v2
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
-      - name: Publish image
-        run: docker push docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
+      - run: docker image ls
       - name: Run tests against the image
         run: docker run docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/} python -m pytest
+      - name: Login to regitry
+        run: docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
+      - name: Publish image
+        run: docker push docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
