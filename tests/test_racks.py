@@ -50,7 +50,7 @@ def test_valid_barcode_wrangle(client):
 
 def test_invalid_barcode_wrangle(client):
     response = client.get(f"{WRANGLE_URL}/{INVALID_BARCODE}")
-    assert response.status_code == HTTPStatus.OK
-    assert response.json_data == {
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json == {
         "error": "Server error: Tube rack barcode not found in the MLWH"
     }

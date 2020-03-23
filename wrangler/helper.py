@@ -129,4 +129,4 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
         app.logger.debug(body)
         return body
     else:
-        None
+        return None

@@ -22,7 +22,7 @@ def get_tubes_from_rack_barcode(tube_rack_barcode: str):
         return parse_tube_rack_csv(tube_rack_barcode)
     except ValueError as e:
         app.logger.warning(e)
-        return {"error": e}, HTTPStatus.NOT_FOUND
+        return {"error": str(e)}, HTTPStatus.NOT_FOUND
     except Exception as e:
         app.logger.error(e)
         return {"error": f"Server error: {e}"}, HTTPStatus.INTERNAL_SERVER_ERROR
@@ -46,8 +46,8 @@ def wrangle(tube_rack_barcode: str):
         if tube_request_body:
             send_request_to_sequencescape(tube_request_body)
         else:
-            raise ValueError("Tube rack barcode not found in the MLWH.")
+            raise ValueError("Tube rack barcode not found in the MLWH")
 
         return "POST request successfully sent to Sequencescape", HTTPStatus.OK
     except Exception as e:
-        return {"error_reason": f"{e}"}, HTTPStatus.NOT_FOUND
+        return {"error": f"Server error: {e}"}, HTTPStatus.NOT_FOUND
