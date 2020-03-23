@@ -110,6 +110,9 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
 
         # we need to compare the count of records in the MLWH with the count of valid
         # tube barcodes in the parsed CSV file - if these are not the same, exit early
+        if (len(tubes_and_coordinates['layout'].keys()) != cursor.rowcount):
+            raise ValueError('Different number of tubes between csv and mlwh entries') 
+
         tubes = []
         for tube_barcode, coordinate in tubes_and_coordinates["layout"].items():
             app.logger.debug(tube_barcode)

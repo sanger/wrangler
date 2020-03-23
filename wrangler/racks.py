@@ -49,5 +49,8 @@ def wrangle(tube_rack_barcode: str):
             raise ValueError("Tube rack barcode not found in the MLWH")
 
         return "POST request successfully sent to Sequencescape", HTTPStatus.OK
+    except ValueError as e:
+        app.logger.warning(e)
+        return {"error": str(e)}, HTTPStatus.NOT_FOUND
     except Exception as e:
         return {"error": f"Server error: {e}"}, HTTPStatus.NOT_FOUND

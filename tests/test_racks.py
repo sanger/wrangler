@@ -13,7 +13,7 @@ def test_barcode_not_provided(client):
 
 
 def test_fail_if_tubes_from_layout_and_mlwh_dont_match(app, client):
-    assert client.get(f"{TUBE_RACK_URL}/{MISMATCHED_BARCODE}") == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert client.get(f"{WRANGLE_URL}/{MISMATCHED_BARCODE}").status_code == HTTPStatus.NOT_FOUND
 
 
 def test_valid_file(client):
@@ -52,5 +52,5 @@ def test_invalid_barcode_wrangle(client):
     response = client.get(f"{WRANGLE_URL}/{INVALID_BARCODE}")
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json == {
-        "error": "Server error: Tube rack barcode not found in the MLWH"
+        "error": "Tube rack barcode not found in the MLWH"
     }
