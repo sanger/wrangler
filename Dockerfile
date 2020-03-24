@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.8
 
 # Needed for something...
 ENV PYTHONUNBUFFERED 1
@@ -16,4 +16,4 @@ RUN pipenv install --dev --ignore-pipfile --system --deploy
 
 ADD . /code/
 
-CMD ["gunicorn", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "wrangler:create_app()"]

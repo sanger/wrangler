@@ -6,16 +6,22 @@ verify_ssl = true
 [dev-packages]
 yapf = "*"
 flake8 = "*"
-pytest = "*"
 coverage = "*"
 pytest-cov = "*"
 rope = "*"
+responses = "*"
+pytest = "*"
+black = "*"
 
 [packages]
-flask = "*"
-pytest = "*"
-python-dotenv = "*"
-gunicorn = "*"
+flask = "~=1.1"
+python-dotenv = "~=0.12"
+gunicorn = "~=20.0"
+mysql-connector-python = "~=8.0"
+requests = "~=2.23"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true
