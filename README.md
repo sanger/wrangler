@@ -1,6 +1,6 @@
 # Tube rack wrangler
 
-![](https://github.com/sanger/tube_rack_wrangler/workflows/.github/workflows/ci.yml/badge.svg)
+![Docker CI](https://github.com/sanger/tube_rack_wrangler/workflows/Docker%20CI/badge.svg)
 
 A micro service to deal with tube racks. Currently, the two main features are:
 
@@ -27,6 +27,7 @@ samples
     * `MLWH_DB_HOST`
     * `MLWH_DB_PORT`
     * `MLWH_DB_DBNAME`
+    * `MLWH_DB_TABLE`,
     * `SS_URL_HOST`
 
 1. Enter the python virtual environment using `pipenv shell`
@@ -34,6 +35,4 @@ samples
 
 ## Testing
 
-1. Edit the `.env` file to set `TUBE_RACK_DIR` to the root directory `.`
-1. Enter the python virtual environment using `pipenv shell`
 1. Run the tests using `python -m pytest`
