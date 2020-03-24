@@ -4,10 +4,12 @@ import responses
 from flask import current_app
 from pytest import raises
 
-from wrangler.exceptions import (BarcodeNotFoundError, BarcodesMismatchError,
-                                 TubesCountError)
-from wrangler.helper import (send_request_to_sequencescape, validate_tubes,
-                             wrangle_tubes)
+from wrangler.exceptions import (
+    BarcodeNotFoundError,
+    BarcodesMismatchError,
+    TubesCountError,
+)
+from wrangler.helper import send_request_to_sequencescape, validate_tubes, wrangle_tubes
 
 
 def test_send_request_to_sequencescape(app, client, mocked_responses):

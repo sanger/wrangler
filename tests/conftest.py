@@ -25,7 +25,9 @@ def app():
     )
 
     with app.app_context():
-        init_db()
+        init_db()  # Create the test schema
+
+        # Populate the db with some test data
         with open(os.path.join(os.path.dirname(__file__), "test_data.sql"), "r") as f:
             for statement in f:
                 get_db().execute(statement)

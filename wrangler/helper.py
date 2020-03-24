@@ -6,8 +6,11 @@ import requests
 from flask import current_app as app
 
 from wrangler.db import get_db
-from wrangler.exceptions import (BarcodeNotFoundError, BarcodesMismatchError,
-                                 TubesCountError)
+from wrangler.exceptions import (
+    BarcodeNotFoundError,
+    BarcodesMismatchError,
+    TubesCountError,
+)
 
 
 def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
@@ -84,7 +87,8 @@ def validate_tubes(layout_dict: Dict, database_dict: Dict):
 
     Arguments:
         layout_dict {Dict} -- the dictionary of tube barcodes and coordinates from the tube rack CSV
-        database_dict {Dict} -- the dictionary of the database records for the tube rack from the MLWH
+        database_dict {Dict} -- the dictionary of the database records for the tube rack from the
+                                MLWH
 
     Raises:
         TubesCountError: [description]
@@ -116,9 +120,12 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
     Returns:
         Dict -- the body of the request to send to Sequencescape
     """
+    app.logger.debug(f"Wrangle with tube rack barcode: {tube_rack_barcode}")
+
     cursor = get_db()
     cursor.execute(
-        f"SELECT * FROM {app.config['MLWH_DB_TABLE']} WHERE tube_rack_barcode = '{tube_rack_barcode}'"
+        f"SELECT * FROM {app.config['MLWH_DB_TABLE']} "
+        f"WHERE tube_rack_barcode = '{tube_rack_barcode}'"
     )
 
     app.logger.debug(f"Number of records found: {cursor.rowcount}")
