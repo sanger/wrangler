@@ -27,12 +27,15 @@ samples
     * `MLWH_DB_HOST`
     * `MLWH_DB_PORT`
     * `MLWH_DB_DBNAME`
-    * `MLWH_DB_TABLE`,
+    * `MLWH_DB_TABLE`
     * `SS_URL_HOST`
+    * `SS_API_KEY`
 
 1. Enter the python virtual environment using `pipenv shell`
 1. Run the app using `flask run`
 
 ## Testing
+
+Make sure to be in virtual environment before running the tests:
 
 1. Run the tests using `python -m pytest`

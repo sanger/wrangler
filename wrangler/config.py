@@ -8,6 +8,7 @@ MLWH_DB_PORT = getenv("MLWH_DB_PORT")
 MLWH_DB_DBNAME = getenv("MLWH_DB_DBNAME")
 MLWH_DB_TABLE = getenv("MLWH_DB_TABLE")
 SS_URL_HOST = getenv("SS_URL_HOST")
+SS_API_KEY = getenv("SS_API_KEY")
 
 REQUIRED_CONFIG = (
     "TUBE_RACK_DIR",
@@ -18,6 +19,7 @@ REQUIRED_CONFIG = (
     "MLWH_DB_DBNAME",
     "MLWH_DB_TABLE",
     "SS_URL_HOST",
+    "SS_API_KEY",
 )
 
 for config in REQUIRED_CONFIG:
