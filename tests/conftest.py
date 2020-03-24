@@ -1,7 +1,10 @@
+import os
+
 import pytest
 import responses
 
 from wrangler import create_app
+from wrangler.db import get_db, get_db_connection, init_db
 
 
 @pytest.fixture
@@ -15,9 +18,18 @@ def app():
             "MLWH_DB_HOST": "localhost",
             "MLWH_DB_PORT": 3306,
             "MLWH_DB_DBNAME": "mlwarehouse_test",
+            "MLWH_DB_TABLE": "heron",
             "SS_URL_HOST": "http://example.com",
+            "SS_API_KEY": "123",
         }
     )
+
+    with app.app_context():
+        init_db()
+        with open(os.path.join(os.path.dirname(__file__), "test_data.sql"), "r") as f:
+            for statement in f:
+                get_db().execute(statement)
+            get_db_connection().commit()
 
     yield app
 

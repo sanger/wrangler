@@ -9,10 +9,13 @@ def init_app(app):
 
 
 def init_db():
+    current_app.logger.debug("Initializing db...")
     db = get_db()
 
-    with current_app.open_resource("schema_test.sql") as f:
-        db.executescript(f.read().decode("utf8"))
+    with current_app.open_resource("sql/schema.sql") as f:
+        for statement in f:
+            db.execute(statement)
+        get_db_connection().commit()
 
 
 def get_db():

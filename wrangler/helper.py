@@ -6,8 +6,9 @@ import requests
 from flask import current_app as app
 
 from wrangler.db import get_db
+from wrangler.exceptions import (BarcodeNotFoundError, BarcodesMismatchError,
+                                 TubesCountError)
 
-from wrangler.exceptions import *
 
 def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
     """Finds and parses a CSV file with the name matching the tube rack barcode passed in.
@@ -27,7 +28,7 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
         tube_rack_barcode {str} -- the barcode of the tube rack
 
     Raises:
-        ValueError: if the tube rack is not found
+        BarcodeNotFoundError: if the tube rack CSV file is not found
 
     Returns:
         Dict -- a dict containing the tube rack barcode and the layout with tube barcodes to
@@ -53,7 +54,7 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
 
         return tube_rack_dict
     else:
-        raise ValueError(f"File NOT found: {full_path_to_find}")
+        raise BarcodeNotFoundError(full_path_to_find)
 
 
 def send_request_to_sequencescape(body: Dict) -> int:
@@ -69,7 +70,7 @@ def send_request_to_sequencescape(body: Dict) -> int:
     app.logger.debug(f"Sending POST to {ss_url}")
 
     headers = {
-        "X-Sequencescape-Client-Id": app.config['SS_API_KEY'],
+        "X-Sequencescape-Client-Id": app.config["SS_API_KEY"],
     }
 
     response = requests.post(ss_url, data=body, headers=headers)
@@ -77,16 +78,31 @@ def send_request_to_sequencescape(body: Dict) -> int:
     return response.status_code
 
 
-def validate_tubes(layout_dict, database_dict):
+def validate_tubes(layout_dict: Dict, database_dict: Dict):
+    """Validates that the number of tubes in the tube rack CSV file are the same as those in the
+    MLWH.
+
+    Arguments:
+        layout_dict {Dict} -- the dictionary of tube barcodes and coordinates from the tube rack CSV
+        database_dict {Dict} -- the dictionary of the database records for the tube rack from the MLWH
+
+    Raises:
+        TubesCountError: [description]
+        BarcodesMismatchError: [description]
+
+    Returns:
+        [boolean] -- returns True if the validation succeeds
+    """
     tubes_layout = list(layout_dict.keys())
     tubes_database = list(database_dict.keys())
 
-    if (len(tubes_layout) != len(tubes_database)):
-        raise DifferentNumTubesLayoutAndDatabase()
-    if (len(set(tubes_layout) - set(tubes_database)) != 0):
-        raise DifferentBarcodesLayoutAndDatabase()
+    if len(tubes_layout) != len(tubes_database):
+        raise TubesCountError()
+    if len(set(tubes_layout) - set(tubes_database)) != 0:
+        raise BarcodesMismatchError()
 
     return True
+
 
 def wrangle_tubes(tube_rack_barcode: str) -> Dict:
     """The wrangler wrangles with the tube rack barcode provided. If the barcode exists in the MLWH,
@@ -122,7 +138,7 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
 
         # we need to compare the count of records in the MLWH with the count of valid
         # tube barcodes in the parsed CSV file - if these are not the same, exit early
-        validate_tubes(tubes_and_coordinates['layout'],tube_sample_dict)
+        validate_tubes(tubes_and_coordinates["layout"], tube_sample_dict)
 
         tubes = []
         for tube_barcode, coordinate in tubes_and_coordinates["layout"].items():
@@ -135,7 +151,7 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
                     "supplier_sample_id": tube_sample_dict[tube_barcode],
                 }
             )
-        
+
         app.logger.debug(f"tubes: {tubes}")
         tube_rack_response = {
             "tube_rack": {"barcode": tube_rack_barcode, "tubes": tubes}
@@ -144,4 +160,4 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
         app.logger.debug(body)
         return body
     else:
-        raise TubeRackBarcodeNotFoundInDatabase()
+        raise BarcodeNotFoundError("MLWH")
