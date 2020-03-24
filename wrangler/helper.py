@@ -70,13 +70,17 @@ def send_request_to_sequencescape(body: Dict) -> int:
         int -- the HTTP status code
     """
     ss_url = app.config["SS_URL_HOST"]
-    app.logger.debug(f"Sending POST to {ss_url}")
+
+    app.logger.info(f"Sending POST to {ss_url}")
 
     headers = {
         "X-Sequencescape-Client-Id": app.config["SS_API_KEY"],
+        "Content-Type": "application/vnd.api+json",
     }
 
-    response = requests.post(ss_url, data=body, headers=headers)
+    response = requests.post(ss_url, json=body, headers=headers)
+
+    app.logger.debug(f"Response from SS: ({response.status_code}) {response.text}")
 
     return response.status_code
 
