@@ -49,7 +49,9 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
             tube_rack_csv = csv.reader(tube_rack_file, delimiter=",")
             layout = {}
             for row in tube_rack_csv:
-                layout[row[1].strip()] = row[0].strip()
+                tube_barcode = row[1].strip()
+                if "NO READ" not in tube_barcode:
+                    layout[tube_barcode] = row[0].strip()
 
         tube_rack_dict = {"rack_barcode": tube_rack_barcode, "layout": layout}
 
