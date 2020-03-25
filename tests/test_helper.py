@@ -10,8 +10,10 @@ from wrangler.exceptions import (
     TubesCountError,
 )
 from wrangler.helper import (
-    parse_tube_rack_csv, send_request_to_sequencescape, 
-    validate_tubes, wrangle_tubes
+    parse_tube_rack_csv,
+    send_request_to_sequencescape,
+    validate_tubes,
+    wrangle_tubes,
 )
 
 
@@ -107,16 +109,13 @@ def test_parse_tube_rack_csv_ignores_no_read(app, client, tmpdir):
     with app.app_context():
         sub = tmpdir.mkdir("sub")
         myfile = sub.join("DN456.csv")
-        app.config["TUBE_RACK_DIR"]= sub
+        app.config["TUBE_RACK_DIR"] = sub
         content = "\n".join(["A01, F001", "B01, NO READ", "C01, F002"])
-        
+
         myfile.write(content)
 
-        expected_message = { 
-            "rack_barcode": "DN456", 
-            "layout": {
-                "F001": "A01", 
-                "F002": "C01"
-            }
+        expected_message = {
+            "rack_barcode": "DN456",
+            "layout": {"F001": "A01", "F002": "C01"},
         }
         assert parse_tube_rack_csv("DN456") == expected_message
