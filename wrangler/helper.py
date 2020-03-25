@@ -155,8 +155,6 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
 
         tubes = []
         for tube_barcode, coordinate in tubes_and_coordinates["layout"].items():
-            app.logger.debug(tube_barcode)
-            app.logger.debug(coordinate)
             tubes.append(
                 {
                     "coordinate": coordinate,
