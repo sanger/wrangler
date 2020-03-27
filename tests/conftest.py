@@ -14,12 +14,12 @@ def app():
             "TESTING": True,
             "TUBE_RACK_DIR": "./tests/csvs",
             "MLWH_DB_USER": "root",
-            "MLWH_DB_PASSWORD": "root",
+            "MLWH_DB_PASSWORD": "",
             "MLWH_DB_HOST": "localhost",
             "MLWH_DB_PORT": 3306,
             "MLWH_DB_DBNAME": "mlwarehouse_test",
             "MLWH_DB_TABLE": "heron",
-            "SS_URL_HOST": "http://example.com",
+            "SS_URL_HOST": "http://localhost:3000",
             "SS_API_KEY": "123",
         }
     )
