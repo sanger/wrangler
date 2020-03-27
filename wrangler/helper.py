@@ -164,8 +164,16 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
             )
 
         app.logger.debug(f"tubes: {tubes}")
+
+        # set size based on the number of rows in the csv file
+        size = 48 if cursor.rowcount == 48 else 96
+
         tube_rack_response = {
-            "tube_rack": {"barcode": tube_rack_barcode, "tubes": tubes}
+            "tube_rack": {
+                            "barcode": tube_rack_barcode,
+                            "size": size,
+                            "tubes": tubes
+                        }
         }
         body = {"data": {"attributes": tube_rack_response}}
         app.logger.debug(body)
