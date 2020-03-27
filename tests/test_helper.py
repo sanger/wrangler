@@ -85,9 +85,6 @@ def test_wrangle_tubes_size_48(app, client):
     with app.app_context():
         tube_request_body = wrangle_tubes("DN_size48")
 
-        print("DEBUGGING HERE!")
-        print(tube_request_body)
-
         assert tube_request_body['data']['attributes']['tube_rack']['size'] == 48
 
         with raises(BarcodeNotFoundError):
