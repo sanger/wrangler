@@ -1,4 +1,4 @@
-# Tube rack wrangler
+# Wrangler
 
 ![Docker CI](https://github.com/sanger/tube_rack_wrangler/workflows/Docker%20CI/badge.svg)
 
