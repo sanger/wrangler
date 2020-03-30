@@ -15,8 +15,7 @@ def test_barcode_not_provided(client):
 
 def test_barcode_not_found(client):
     response = client.get(f"{TUBE_RACK_URL}/blah")
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert "BarcodeNotFoundError" in response.get_json()["error"]
+    assert response.status_code == HTTPStatus.NO_CONTENT
 
 
 def test_invalid_tube_rack_file(client):
@@ -45,13 +44,13 @@ def test_valid_tube_rack_file(client):
 
 def test_fail_if_num_tubes_from_layout_and_mlwh_do_not_match(client):
     response = client.get(f"{WRANGLE_URL}/{LESS_TUBES_BARCODE}")
-    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.status_code == HTTPStatus.OK
     assert "TubesCountError" in response.get_json()["error"]
 
 
 def test_fail_if_any_tube_barcode_different_between_layout_and_mlwh(client):
     response = client.get(f"{WRANGLE_URL}/{DIFF_TUBES_BARCODE}")
-    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.status_code == HTTPStatus.OK
     assert "BarcodesMismatchError" in response.get_json()["error"]
 
 
@@ -63,8 +62,8 @@ def test_valid_barcode_wrangle(client):
 
 def test_invalid_barcode_wrangle(client):
     response = client.get(f"{WRANGLE_URL}/{INVALID_BARCODE}")
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert "BarcodeNotFoundError" in response.get_json()["error"]
+    assert response.status_code == HTTPStatus.NO_CONTENT
+
 
 def test_size48_wrangle(client):
     response = client.get(f"{WRANGLE_URL}/{SIZE48_BARCODE}")

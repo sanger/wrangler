@@ -10,6 +10,7 @@ from wrangler.exceptions import (
     TubesCountError,
 )
 from wrangler.helper import (
+    handle_error,
     parse_tube_rack_csv,
     send_request_to_sequencescape,
     validate_tubes,
@@ -25,9 +26,17 @@ def test_send_request_to_sequencescape(app, client, mocked_responses):
             body="{}",
             status=HTTPStatus.CREATED,
         )
-        response = send_request_to_sequencescape({})
-
+        mocked_responses.add(
+            responses.GET,
+            current_app.config["SS_URL_HOST"],
+            body="{'blah': 'blah'}",
+            status=HTTPStatus.OK,
+        )
+        response = send_request_to_sequencescape("POST", {})
         assert response == HTTPStatus.CREATED
+
+        response = send_request_to_sequencescape("GET", {"blah": "blah"})
+        assert response == HTTPStatus.OK
 
 
 def test_wrangle_tubes(app, client):
@@ -81,14 +90,16 @@ def test_wrangle_tubes(app, client):
         with raises(BarcodeNotFoundError):
             wrangle_tubes("")
 
+
 def test_wrangle_tubes_size_48(app, client):
     with app.app_context():
         tube_request_body = wrangle_tubes("DN_size48")
 
-        assert tube_request_body['data']['attributes']['tube_rack']['size'] == 48
+        assert tube_request_body["data"]["attributes"]["tube_rack"]["size"] == 48
 
         with raises(BarcodeNotFoundError):
             wrangle_tubes("")
+
 
 def test_validate_tubes_different_barcodes():
     with raises(BarcodesMismatchError):
@@ -128,3 +139,13 @@ def test_parse_tube_rack_csv_ignores_no_read(app, client, tmpdir):
             "layout": {"F001": "A01", "F002": "C01"},
         }
         assert parse_tube_rack_csv("DN456") == expected_message
+
+
+def test_handle_error(app):
+    barcode_error = BarcodeNotFoundError("blah")
+    with app.app_context():
+        assert handle_error(barcode_error) == ({}, HTTPStatus.NO_CONTENT)
+        assert handle_error(Exception("blah")) == (
+            {"error": "Exception"},
+            HTTPStatus.OK,
+        )

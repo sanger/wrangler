@@ -1,4 +1,5 @@
 import csv
+from http import HTTPStatus
 from os.path import getsize, isfile, join
 from typing import Dict
 
@@ -62,15 +63,19 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
         raise BarcodeNotFoundError(full_path_to_find)
 
 
-def send_request_to_sequencescape(body: Dict) -> int:
-    """Send a POST request to Sequencescape with the body provided.
+def send_request_to_sequencescape(request_type: str, body: Dict) -> int:
+    """Send a particular request to Sequencescape with the body provided.
 
     Arguments:
-        body {Dict} -- the JSON body to send with the request
+        request_type {str} -- the type of request to make to Sequencescape
+        body {dict} -- the JSON body to send with the request
 
     Returns:
         int -- the HTTP status code
     """
+    if request_type not in ("POST", "GET"):
+        raise Exception("Only POST or GET requests are handled currently.")
+
     ss_url = app.config["SS_URL_HOST"]
 
     app.logger.info(f"Sending POST to {ss_url}")
@@ -80,7 +85,11 @@ def send_request_to_sequencescape(body: Dict) -> int:
         "Content-Type": "application/vnd.api+json",
     }
 
-    response = requests.post(ss_url, json=body, headers=headers)
+    if request_type == "POST":
+        response = requests.post(ss_url, json=body, headers=headers)
+
+    if request_type == "GET":
+        response = requests.get(ss_url, json=body, headers=headers)
 
     app.logger.debug(f"Response from SS: ({response.status_code}) {response.text}")
 
@@ -169,14 +178,21 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
         size = 48 if cursor.rowcount == 48 else 96
 
         tube_rack_response = {
-            "tube_rack": {
-                            "barcode": tube_rack_barcode,
-                            "size": size,
-                            "tubes": tubes
-                        }
+            "tube_rack": {"barcode": tube_rack_barcode, "size": size, "tubes": tubes}
         }
         body = {"data": {"attributes": tube_rack_response}}
         app.logger.debug(body)
         return body
     else:
         raise BarcodeNotFoundError("MLWH")
+
+
+def handle_error(exception):
+    app.logger.exception(exception)
+    exception_name = type(exception).__name__
+    send_request_to_sequencescape("GET", {"error": exception_name})
+
+    if type(exception) == BarcodeNotFoundError:
+        return {}, HTTPStatus.NO_CONTENT
+    else:
+        return {"error": f"{exception_name}"}, HTTPStatus.OK
