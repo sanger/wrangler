@@ -1,6 +1,6 @@
 name: Docker CI
 
-on: [push]
+on: [push, release]
 
 env:
   IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
@@ -17,21 +17,18 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: mlwarehouse_test
     steps:
-      - run: env
-      - run: docker ps
-      - run: docker network ls
       - uses: actions/checkout@v2
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
-      - run: docker image ls
       - name: Run tests against the image
         run: docker run --network host docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/} python -m pytest
       - name: Login to regitry
         run: docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
-      - name: Publish image (all branches not "master")
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || github.event_name == 'release'
+      - name: Publish image with image tag being "develop" or git tag name (when not "master")
         run: docker push docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
-        if: github.ref != 'refs/heads/master'
-      - name: Tag the Docker image with "latest" if it's the "master" branch
+        if: github.ref != 'refs/heads/master' || github.event_name == 'release'
+      - name: Tag the Docker image with 'latest' if it's the 'master' branch
         run: docker tag docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/} docker.pkg.github.com/${IMAGE_NAME}:latest
         if: github.ref == 'refs/heads/master'
       - name: Publish image (if "master" branch)
