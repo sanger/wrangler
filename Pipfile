@@ -19,6 +19,7 @@ python-dotenv = "~=0.12"
 gunicorn = "~=20.0"
 mysql-connector-python = "~=8.0"
 requests = "~=2.23"
+mypy = "*"
 
 [requires]
 python_version = "3.8"

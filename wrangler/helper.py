@@ -1,7 +1,7 @@
 import csv
 from http import HTTPStatus
 from os.path import getsize, isfile, join
-from typing import Dict
+from typing import Dict, Tuple
 
 import requests
 from flask import current_app as app
@@ -96,7 +96,7 @@ def send_request_to_sequencescape(request_type: str, body: Dict) -> int:
     return response.status_code
 
 
-def validate_tubes(layout_dict: Dict, database_dict: Dict):
+def validate_tubes(layout_dict: Dict, database_dict: Dict) -> bool:
     """Validates that the number of tubes in the tube rack CSV file are the same as those in the
     MLWH.
 
@@ -187,7 +187,7 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
         raise BarcodeNotFoundError("MLWH")
 
 
-def handle_error(exception):
+def handle_error(exception: Exception) -> Tuple[Dict, HTTPStatus]:
     app.logger.exception(exception)
     exception_name = type(exception).__name__
     send_request_to_sequencescape("GET", {"error": exception_name})

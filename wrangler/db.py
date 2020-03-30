@@ -2,13 +2,13 @@ import mysql.connector
 from flask import current_app, g
 
 
-def init_app(app):
+def init_app(app) -> None:
     app.teardown_appcontext(
         close_db
     )  # call when cleaning up after returning the response
 
 
-def init_db():
+def init_db() -> None:
     current_app.logger.debug("Initializing db...")
     db = get_db()
 
@@ -36,7 +36,7 @@ def get_db_connection():
     return g.db_connection
 
 
-def close_db(e=None):
+def close_db(e=None) -> None:
     db_cursor = g.pop("db_cursor", None)
     db_connection = g.pop("db_connection", None)
 
