@@ -6,6 +6,7 @@ VALID_BARCODE = "DN123"
 INVALID_BARCODE = "DN_invalid"
 LESS_TUBES_BARCODE = "DN_lesstubes"
 DIFF_TUBES_BARCODE = "DN_difftubes"
+SIZE48_BARCODE = "DN_size48"
 
 
 def test_barcode_not_provided(client):
@@ -64,3 +65,8 @@ def test_invalid_barcode_wrangle(client):
     response = client.get(f"{WRANGLE_URL}/{INVALID_BARCODE}")
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert "BarcodeNotFoundError" in response.get_json()["error"]
+
+def test_size48_wrangle(client):
+    response = client.get(f"{WRANGLE_URL}/{SIZE48_BARCODE}")
+    assert response.status_code == HTTPStatus.OK
+    assert response.data == b"POST request successfully sent to Sequencescape"
