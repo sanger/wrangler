@@ -152,9 +152,7 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
         app.logger.debug(results)
 
         # create a dict with tube barcode as key and supplier sample ID as value
-        tube_sample_dict = {
-            row["tube_barcode"]: row["supplier_sample_id"] for row in results
-        }
+        tube_sample_dict = {row["tube_barcode"]: row["supplier_sample_id"] for row in results}
 
         tubes_and_coordinates = parse_tube_rack_csv(tube_rack_barcode)
 
@@ -187,10 +185,20 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
         raise BarcodeNotFoundError("MLWH")
 
 
-def handle_error(exception: Exception) -> Tuple[Dict, HTTPStatus]:
+def error_request_body(exception_name: str, tube_rack_barcode: str) -> Dict:
+    body = {
+        "data": {
+            "attributes": {"tube_rack": {"barcode": tube_rack_barcode}, "error": exception_name}
+        }
+    }
+    return body
+
+
+def handle_error(exception: Exception, tube_rack_barcode: str) -> Tuple[Dict, HTTPStatus]:
     app.logger.exception(exception)
     exception_name = type(exception).__name__
-    send_request_to_sequencescape("GET", {"error": exception_name})
+
+    send_request_to_sequencescape("GET", error_request_body(exception_name, tube_rack_barcode))
 
     if type(exception) == BarcodeNotFoundError:
         return {}, HTTPStatus.NO_CONTENT

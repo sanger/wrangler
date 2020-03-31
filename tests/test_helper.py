@@ -4,12 +4,9 @@ import responses
 from flask import current_app
 from pytest import raises
 
-from wrangler.exceptions import (
-    BarcodeNotFoundError,
-    BarcodesMismatchError,
-    TubesCountError,
-)
+from wrangler.exceptions import BarcodeNotFoundError, BarcodesMismatchError, TubesCountError
 from wrangler.helper import (
+    error_request_body,
     handle_error,
     parse_tube_rack_csv,
     send_request_to_sequencescape,
@@ -21,10 +18,7 @@ from wrangler.helper import (
 def test_send_request_to_sequencescape(app, client, mocked_responses):
     with app.app_context():
         mocked_responses.add(
-            responses.POST,
-            current_app.config["SS_URL_HOST"],
-            body="{}",
-            status=HTTPStatus.CREATED,
+            responses.POST, current_app.config["SS_URL_HOST"], body="{}", status=HTTPStatus.CREATED,
         )
         mocked_responses.add(
             responses.GET,
@@ -143,9 +137,21 @@ def test_parse_tube_rack_csv_ignores_no_read(app, client, tmpdir):
 
 def test_handle_error(app):
     barcode_error = BarcodeNotFoundError("blah")
+    tube_rack_barcode = "DN123"
     with app.app_context():
-        assert handle_error(barcode_error) == ({}, HTTPStatus.NO_CONTENT)
-        assert handle_error(Exception("blah")) == (
+        assert handle_error(barcode_error, tube_rack_barcode) == ({}, HTTPStatus.NO_CONTENT,)
+        assert handle_error(Exception("blah"), tube_rack_barcode) == (
             {"error": "Exception"},
             HTTPStatus.OK,
         )
+
+
+def test_error_request_body():
+    tube_rack_barcode = "DN456"
+    exception_name = type(Exception("blah")).__name__
+    body = {
+        "data": {
+            "attributes": {"tube_rack": {"barcode": tube_rack_barcode}, "error": exception_name}
+        }
+    }
+    assert error_request_body(exception_name, tube_rack_barcode) == body

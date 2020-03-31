@@ -3,9 +3,7 @@ from flask import current_app, g
 
 
 def init_app(app) -> None:
-    app.teardown_appcontext(
-        close_db
-    )  # call when cleaning up after returning the response
+    app.teardown_appcontext(close_db)  # call when cleaning up after returning the response
 
 
 def init_db() -> None:
