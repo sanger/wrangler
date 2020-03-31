@@ -6,12 +6,13 @@ verify_ssl = true
 [dev-packages]
 yapf = "*"
 flake8 = "*"
-coverage = "*"
+coverage = {extras = ["toml"],version = "*"}
 pytest-cov = "*"
 rope = "*"
 responses = "*"
 pytest = "*"
 black = "*"
+flake8-bugbear = "*"
 
 [packages]
 flask = "~=1.1"
