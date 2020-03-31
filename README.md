@@ -11,21 +11,23 @@ samples
 
 ## Requirements
 
-* python 3
-* pipenv
+* [pyenv](https://github.com/pyenv/pyenv)
+* [pipenv](https://pipenv.pypa.io/en/latest/)
 * mySQL
 
 ## Setup
 
-* Use [pyenv](https://github.com/pyenv/pyenv) or something similar to install the version of python
-defined in the `Pipfile`
+* Use pyenv or something similar to install the version of python
+defined in the `Pipfile`:
   1. `brew install pyenv`
   2. `pyenv install <python_version>`
-* To install the required packages (and dev packages) run `pipenv install --dev`
+* Use pipenv or something similar to install python packages:
+`brew install pipenv`
+* To install the required packages (and dev packages) run: `pipenv install --dev`
 
 ## Running
 
-1. Create a `.env` file with the following contents (or use `.env.example`):
+1. Create a `.env` file with the following contents (or use `.env.example` - rename to `.env`):
     * `FLASK_ENV=development`
     * `FLASK_APP=wrangler`
     * `TUBE_RACK_DIR=<dir>`
