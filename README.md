@@ -33,12 +33,14 @@ defined in the `Pipfile`:
     * `TUBE_RACK_DIR=<dir>`
     * `MLWH_DB_USER`
     * `MLWH_DB_PASSWORD`
-    * `MLWH_DB_HOST`
-    * `MLWH_DB_PORT`
-    * `MLWH_DB_DBNAME`
-    * `MLWH_DB_TABLE`
+    * `MLWH_DB_HOST=localhost`
+    * `MLWH_DB_PORT=3306`
+    * `MLWH_DB_DBNAME=mlwarehouse_dev`
+    * `MLWH_DB_TABLE=cgap_heron`
     * `SS_URL_HOST=http://example.com/api/blah`
     * `SS_API_KEY=123`
+1. Run the SQL scripts `wrangler/sql/schema_dev.sql` and `wrangler/sql/schema_test.sql` to create
+the development and test databases and their tables.
 1. Enter the python virtual environment using `pipenv shell`
 1. Run the app using `flask run`
 
@@ -49,7 +51,6 @@ environment.
 
 Make sure to be in the virtual environment before running the tests:
 
-1. Create a database locally called 'mlwarehouse_test' and a table in it called 'heron'
 1. Update the credentials for your database in the file `tests/conftest.py`
 1. Run the tests using `python -m pytest`
 

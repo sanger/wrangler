@@ -7,10 +7,12 @@ def init_app(app) -> None:
 
 
 def init_db() -> None:
+    """Currently only being used when testing
+    """
     current_app.logger.debug("Initializing db...")
     db = get_db()
 
-    with current_app.open_resource("sql/schema.sql") as f:
+    with current_app.open_resource("sql/schema_test.sql") as f:
         for statement in f:
             db.execute(statement)
         get_db_connection().commit()
