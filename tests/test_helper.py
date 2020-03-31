@@ -21,15 +21,15 @@ def test_send_request_to_sequencescape(app, client, mocked_responses):
             responses.POST, current_app.config["SS_URL_HOST"], body="{}", status=HTTPStatus.CREATED,
         )
         mocked_responses.add(
-            responses.GET,
+            responses.POST,
             current_app.config["SS_URL_HOST"],
             body="{'blah': 'blah'}",
             status=HTTPStatus.OK,
         )
-        response = send_request_to_sequencescape("POST", {})
+        response = send_request_to_sequencescape({})
         assert response == HTTPStatus.CREATED
 
-        response = send_request_to_sequencescape("GET", {"blah": "blah"})
+        response = send_request_to_sequencescape({"blah": "blah"})
         assert response == HTTPStatus.OK
 
 

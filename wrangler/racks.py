@@ -51,7 +51,7 @@ def wrangle(tube_rack_barcode: str):
     """
     try:
         tube_request_body = wrangle_tubes(tube_rack_barcode)
-        send_request_to_sequencescape("POST", tube_request_body)
+        send_request_to_sequencescape(tube_request_body)
         return "POST request successfully sent to Sequencescape", HTTPStatus.OK
     except (TubesCountError, BarcodesMismatchError, BarcodeNotFoundError) as e:
         return handle_error(e, tube_rack_barcode)

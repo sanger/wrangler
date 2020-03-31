@@ -63,19 +63,15 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
         raise BarcodeNotFoundError(full_path_to_find)
 
 
-def send_request_to_sequencescape(request_type: str, body: Dict) -> int:
-    """Send a particular request to Sequencescape with the body provided.
+def send_request_to_sequencescape(body: Dict) -> int:
+    """Send a POST request to Sequencescape with the body provided.
 
     Arguments:
-        request_type {str} -- the type of request to make to Sequencescape
         body {dict} -- the JSON body to send with the request
 
     Returns:
         int -- the HTTP status code
     """
-    if request_type not in ("POST", "GET"):
-        raise Exception("Only POST or GET requests are handled currently.")
-
     ss_url = app.config["SS_URL_HOST"]
 
     app.logger.info(f"Sending POST to {ss_url}")
@@ -85,11 +81,7 @@ def send_request_to_sequencescape(request_type: str, body: Dict) -> int:
         "Content-Type": "application/vnd.api+json",
     }
 
-    if request_type == "POST":
-        response = requests.post(ss_url, json=body, headers=headers)
-
-    if request_type == "GET":
-        response = requests.get(ss_url, json=body, headers=headers)
+    response = requests.post(ss_url, json=body, headers=headers)
 
     app.logger.debug(f"Response from SS: ({response.status_code}) {response.text}")
 
@@ -186,6 +178,15 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
 
 
 def error_request_body(exception_name: str, tube_rack_barcode: str) -> Dict:
+    """Returns a dictionary to be used as the body in a request.
+
+    Arguments:
+        exception_name {str} -- the name of the exception which was raised
+        tube_rack_barcode {str} -- the barcode of the tube rack in question
+
+    Returns:
+        Dict -- the body of the request to be sent
+    """
     body = {
         "data": {
             "attributes": {"tube_rack": {"barcode": tube_rack_barcode}, "error": exception_name}
@@ -195,10 +196,20 @@ def error_request_body(exception_name: str, tube_rack_barcode: str) -> Dict:
 
 
 def handle_error(exception: Exception, tube_rack_barcode: str) -> Tuple[Dict, HTTPStatus]:
+    """Handle the execption raised by logging it and sending the error to Sequencescape.
+
+    Arguments:
+        exception {Exception} -- the exception raised
+        tube_rack_barcode {str} -- the barcode of the tube rack in question
+
+    Returns:
+        Tuple[Dict, HTTPStatus] -- this gets returned by the Flask view and is converted to a Flask
+        Response object
+    """
     app.logger.exception(exception)
     exception_name = type(exception).__name__
 
-    send_request_to_sequencescape("GET", error_request_body(exception_name, tube_rack_barcode))
+    send_request_to_sequencescape(error_request_body(exception_name, tube_rack_barcode))
 
     if type(exception) == BarcodeNotFoundError:
         return {}, HTTPStatus.NO_CONTENT
