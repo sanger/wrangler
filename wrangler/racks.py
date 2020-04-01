@@ -4,7 +4,12 @@ from flask import Blueprint
 from flask import current_app as app
 
 from .exceptions import BarcodeNotFoundError, BarcodesMismatchError, TubesCountError
-from .helper import parse_tube_rack_csv, send_request_to_sequencescape, wrangle_tubes
+from .helper import (
+    handle_error,
+    parse_tube_rack_csv,
+    send_request_to_sequencescape,
+    wrangle_tubes,
+)
 
 bp = Blueprint("racks", __name__)
 
@@ -24,7 +29,7 @@ def get_tubes_from_rack_barcode(tube_rack_barcode: str):
         return parse_tube_rack_csv(tube_rack_barcode)
     except BarcodeNotFoundError as e:
         app.logger.exception(e)
-        return {"error": f"{type(e).__name__}"}, HTTPStatus.NOT_FOUND
+        return {}, HTTPStatus.NO_CONTENT
     except Exception as e:
         app.logger.exception(e)
         return (
@@ -48,12 +53,8 @@ def wrangle(tube_rack_barcode: str):
         tube_request_body = wrangle_tubes(tube_rack_barcode)
         send_request_to_sequencescape(tube_request_body)
         return "POST request successfully sent to Sequencescape", HTTPStatus.OK
-    except BarcodeNotFoundError as e:
-        app.logger.exception(e)
-        return {"error": f"{type(e).__name__}"}, HTTPStatus.NOT_FOUND
-    except (TubesCountError, BarcodesMismatchError) as e:
-        app.logger.exception(e)
-        return {"error": f"{type(e).__name__}"}, HTTPStatus.NOT_FOUND
+    except (TubesCountError, BarcodesMismatchError, BarcodeNotFoundError) as e:
+        return handle_error(e, tube_rack_barcode)
     except Exception as e:
         app.logger.exception(e)
         return (

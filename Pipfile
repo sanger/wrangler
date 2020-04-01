@@ -6,12 +6,13 @@ verify_ssl = true
 [dev-packages]
 yapf = "*"
 flake8 = "*"
-coverage = "*"
+coverage = {extras = ["toml"],version = "*"}
 pytest-cov = "*"
 rope = "*"
 responses = "*"
 pytest = "*"
 black = "*"
+flake8-bugbear = "*"
 
 [packages]
 flask = "~=1.1"
@@ -19,6 +20,7 @@ python-dotenv = "~=0.12"
 gunicorn = "~=20.0"
 mysql-connector-python = "~=8.0"
 requests = "~=2.23"
+mypy = "*"
 
 [requires]
 python_version = "3.8"

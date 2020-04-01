@@ -19,7 +19,7 @@ def app():
             "MLWH_DB_HOST": "localhost",
             "MLWH_DB_PORT": 3306,
             "MLWH_DB_DBNAME": "mlwarehouse_test",
-            "MLWH_DB_TABLE": "heron",
+            "MLWH_DB_TABLE": "cgap_heron",
             "SS_URL_HOST": "http://example.com",
             "SS_API_KEY": "123",
         }

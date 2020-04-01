@@ -1,6 +1,7 @@
 import csv
+from http import HTTPStatus
 from os.path import getsize, isfile, join
-from typing import Dict
+from typing import Dict, Tuple
 
 import requests
 from flask import current_app as app
@@ -66,7 +67,7 @@ def send_request_to_sequencescape(body: Dict) -> int:
     """Send a POST request to Sequencescape with the body provided.
 
     Arguments:
-        body {Dict} -- the JSON body to send with the request
+        body {dict} -- the JSON body to send with the request
 
     Returns:
         int -- the HTTP status code
@@ -87,7 +88,7 @@ def send_request_to_sequencescape(body: Dict) -> int:
     return response.status_code
 
 
-def validate_tubes(layout_dict: Dict, database_dict: Dict):
+def validate_tubes(layout_dict: Dict, database_dict: Dict) -> bool:
     """Validates that the number of tubes in the tube rack CSV file are the same as those in the
     MLWH.
 
@@ -143,9 +144,7 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
         app.logger.debug(results)
 
         # create a dict with tube barcode as key and supplier sample ID as value
-        tube_sample_dict = {
-            row["tube_barcode"]: row["supplier_sample_id"] for row in results
-        }
+        tube_sample_dict = {row["tube_barcode"]: row["supplier_sample_id"] for row in results}
 
         tubes_and_coordinates = parse_tube_rack_csv(tube_rack_barcode)
 
@@ -169,14 +168,50 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
         size = 48 if cursor.rowcount == 48 else 96
 
         tube_rack_response = {
-            "tube_rack": {
-                            "barcode": tube_rack_barcode,
-                            "size": size,
-                            "tubes": tubes
-                        }
+            "tube_rack": {"barcode": tube_rack_barcode, "size": size, "tubes": tubes}
         }
         body = {"data": {"attributes": tube_rack_response}}
         app.logger.debug(body)
         return body
     else:
         raise BarcodeNotFoundError("MLWH")
+
+
+def error_request_body(exception_name: str, tube_rack_barcode: str) -> Dict:
+    """Returns a dictionary to be used as the body in a request.
+
+    Arguments:
+        exception_name {str} -- the name of the exception which was raised
+        tube_rack_barcode {str} -- the barcode of the tube rack in question
+
+    Returns:
+        Dict -- the body of the request to be sent
+    """
+    body = {
+        "data": {
+            "attributes": {"tube_rack": {"barcode": tube_rack_barcode}, "error": exception_name}
+        }
+    }
+    return body
+
+
+def handle_error(exception: Exception, tube_rack_barcode: str) -> Tuple[Dict, HTTPStatus]:
+    """Handle the execption raised by logging it and sending the error to Sequencescape.
+
+    Arguments:
+        exception {Exception} -- the exception raised
+        tube_rack_barcode {str} -- the barcode of the tube rack in question
+
+    Returns:
+        Tuple[Dict, HTTPStatus] -- this gets returned by the Flask view and is converted to a Flask
+        Response object
+    """
+    app.logger.exception(exception)
+    exception_name = type(exception).__name__
+
+    send_request_to_sequencescape(error_request_body(exception_name, tube_rack_barcode))
+
+    if type(exception) == BarcodeNotFoundError:
+        return {}, HTTPStatus.NO_CONTENT
+    else:
+        return {"error": f"{exception_name}"}, HTTPStatus.OK

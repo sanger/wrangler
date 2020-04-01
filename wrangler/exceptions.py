@@ -13,9 +13,7 @@ class TubesCountError(Error):
         self.message = message
 
     def __str__(self):
-        default_message = (
-            f"TubesCountError: Different number of tubes between CSV and MLWH entries"
-        )
+        default_message = f"TubesCountError: Different number of tubes between CSV and MLWH entries"
 
         if self.message:
             return f"{default_message}: {self.message}"
@@ -58,9 +56,7 @@ class BarcodeNotFoundError(Error):
         self.location = location
 
     def __str__(self):
-        default_message = (
-            f"BarcodeNotFoundError: Tube rack barcode not found in/at {self.location}"
-        )
+        default_message = f"BarcodeNotFoundError: Tube rack barcode not found in/at {self.location}"
 
         if self.message:
             return f"{default_message}: {self.message}"
