@@ -61,7 +61,7 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
         raise BarcodeNotFoundError(full_path_to_find)
 
 
-def send_request_to_sequencescape(endpoint: str, body: Dict) -> int:
+def send_request_to_sequencescape(endpoint: str, body: Dict):
     """Send a POST request to Sequencescape with the body provided.
 
     Arguments:
@@ -80,11 +80,11 @@ def send_request_to_sequencescape(endpoint: str, body: Dict) -> int:
         "Content-Type": "application/vnd.api+json",
     }
 
-    response = requests.post(ss_url, json=body, headers=headers)
-
-    app.logger.debug(f"Response from SS: ({response.status_code}) {response.text}")
-
-    return response.status_code
+    try:
+        response = requests.post(ss_url, json=body, headers=headers)
+        app.logger.debug(f"Response code from SS: {response.status_code}")
+    except Exception as e:
+        app.logger.exception(e)
 
 
 def validate_tubes(layout_dict: Dict, database_dict: Dict) -> bool:
