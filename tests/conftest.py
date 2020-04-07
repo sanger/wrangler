@@ -12,16 +12,19 @@ def app():
     # don't commit changes to following environment variables because tests in builds rely on them
     app = create_app(
         {
+            "MLWH_DB_DBNAME": "mlwarehouse_test",
+            "MLWH_DB_HOST": "localhost",
+            "MLWH_DB_PASSWORD": "root",
+            "MLWH_DB_PORT": 3306,
+            "MLWH_DB_TABLE": "cgap_heron",
+            "MLWH_DB_USER": "root",
+            "SS_API_KEY": "123",
+            "SS_HOST": "example.com",
+            "SS_PROTOCOL": "http",
+            "SS_TUBE_RACK_ENDPOINT": "api/v2/heron/tube_racks",
+            "SS_TUBE_RACK_STATUS_ENDPOINT": "api/v2/heron/tube_rack_statuses",
             "TESTING": True,
             "TUBE_RACK_DIR": "./tests/csvs",
-            "MLWH_DB_USER": "root",
-            "MLWH_DB_PASSWORD": "root",
-            "MLWH_DB_HOST": "localhost",
-            "MLWH_DB_PORT": 3306,
-            "MLWH_DB_DBNAME": "mlwarehouse_test",
-            "MLWH_DB_TABLE": "cgap_heron",
-            "SS_URL_HOST": "http://example.com",
-            "SS_API_KEY": "123",
         }
     )
 

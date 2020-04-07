@@ -6,6 +6,7 @@ from pytest import raises
 
 from wrangler.exceptions import BarcodeNotFoundError, BarcodesMismatchError, TubesCountError
 from wrangler.helper import (
+    STATUS_VALIDATION_FAILED,
     error_request_body,
     handle_error,
     parse_tube_rack_csv,
@@ -17,20 +18,13 @@ from wrangler.helper import (
 
 def test_send_request_to_sequencescape(app, client, mocked_responses):
     with app.app_context():
-        mocked_responses.add(
-            responses.POST, current_app.config["SS_URL_HOST"], body="{}", status=HTTPStatus.CREATED,
-        )
-        mocked_responses.add(
-            responses.POST,
-            current_app.config["SS_URL_HOST"],
-            body="{'blah': 'blah'}",
-            status=HTTPStatus.OK,
-        )
-        response = send_request_to_sequencescape({})
-        assert response == HTTPStatus.CREATED
+        ss_url = f'{current_app.config["SS_PROTOCOL"]}://{current_app.config["SS_HOST"]}/test'
 
-        response = send_request_to_sequencescape({"blah": "blah"})
-        assert response == HTTPStatus.OK
+        mocked_responses.add(
+            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED,
+        )
+        response = send_request_to_sequencescape("test", {})
+        assert response == HTTPStatus.CREATED
 
 
 def test_wrangle_tubes(app, client):
@@ -148,10 +142,18 @@ def test_handle_error(app):
 
 def test_error_request_body():
     tube_rack_barcode = "DN456"
-    exception_name = type(Exception("blah")).__name__
+    exception = Exception("blah")
     body = {
         "data": {
-            "attributes": {"tube_rack": {"barcode": tube_rack_barcode}, "error": exception_name}
+            "attributes": {
+                "tube_rack_status": {
+                    "tube_rack": {
+                        "barcode": tube_rack_barcode,
+                        "status": STATUS_VALIDATION_FAILED,
+                        "messages": [str(exception)],
+                    }
+                }
+            }
         }
     }
-    assert error_request_body(exception_name, tube_rack_barcode) == body
+    assert error_request_body(exception, tube_rack_barcode) == body
