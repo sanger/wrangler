@@ -9,7 +9,7 @@ from flask import current_app as app
 from wrangler.db import get_db
 from wrangler.exceptions import BarcodeNotFoundError, BarcodesMismatchError, TubesCountError
 
-STATUS_VALIDATION_FAILED = "validation failed"
+STATUS_VALIDATION_FAILED = "validation_failed"
 
 
 def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
