@@ -7,11 +7,9 @@ import requests
 from flask import current_app as app
 
 from wrangler.db import get_db
-from wrangler.exceptions import (
-    BarcodeNotFoundError,
-    BarcodesMismatchError,
-    TubesCountError,
-)
+from wrangler.exceptions import BarcodeNotFoundError, BarcodesMismatchError, TubesCountError
+
+STATUS_VALIDATION_FAILED = "validation_failed"
 
 
 def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
@@ -63,16 +61,17 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
         raise BarcodeNotFoundError(full_path_to_find)
 
 
-def send_request_to_sequencescape(body: Dict) -> int:
+def send_request_to_sequencescape(endpoint: str, body: Dict) -> int:
     """Send a POST request to Sequencescape with the body provided.
 
     Arguments:
+        endpoint {str} -- the endpoint to which to send the request
         body {dict} -- the JSON body to send with the request
 
     Returns:
         int -- the HTTP status code
     """
-    ss_url = app.config["SS_URL_HOST"]
+    ss_url = f'{app.config["SS_PROTOCOL"]}://{app.config["SS_HOST"]}{endpoint}'
 
     app.logger.info(f"Sending POST to {ss_url}")
 
@@ -81,11 +80,14 @@ def send_request_to_sequencescape(body: Dict) -> int:
         "Content-Type": "application/vnd.api+json",
     }
 
-    response = requests.post(ss_url, json=body, headers=headers)
+    try:
+        response = requests.post(ss_url, json=body, headers=headers)
 
-    app.logger.debug(f"Response from SS: ({response.status_code}) {response.text}")
+        app.logger.debug(f"Response code from SS: {response.status_code}")
 
-    return response.status_code
+        return response.status_code
+    except Exception as e:
+        app.logger.exception(e)
 
 
 def validate_tubes(layout_dict: Dict, database_dict: Dict) -> bool:
@@ -177,11 +179,11 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
         raise BarcodeNotFoundError("MLWH")
 
 
-def error_request_body(exception_name: str, tube_rack_barcode: str) -> Dict:
+def error_request_body(exception: Exception, tube_rack_barcode: str) -> Dict:
     """Returns a dictionary to be used as the body in a request.
 
     Arguments:
-        exception_name {str} -- the name of the exception which was raised
+        exception {Exception} -- the exception which was raised
         tube_rack_barcode {str} -- the barcode of the tube rack in question
 
     Returns:
@@ -189,7 +191,15 @@ def error_request_body(exception_name: str, tube_rack_barcode: str) -> Dict:
     """
     body = {
         "data": {
-            "attributes": {"tube_rack": {"barcode": tube_rack_barcode}, "error": exception_name}
+            "attributes": {
+                "tube_rack_status": {
+                    "tube_rack": {
+                        "barcode": tube_rack_barcode,
+                        "status": STATUS_VALIDATION_FAILED,
+                        "messages": [str(exception)],
+                    }
+                }
+            }
         }
     }
     return body
@@ -207,11 +217,13 @@ def handle_error(exception: Exception, tube_rack_barcode: str) -> Tuple[Dict, HT
         Response object
     """
     app.logger.exception(exception)
-    exception_name = type(exception).__name__
 
-    send_request_to_sequencescape(error_request_body(exception_name, tube_rack_barcode))
+    send_request_to_sequencescape(
+        app.config["SS_TUBE_RACK_STATUS_ENDPOINT"],
+        error_request_body(exception, tube_rack_barcode),
+    )
 
     if type(exception) == BarcodeNotFoundError:
         return {}, HTTPStatus.NO_CONTENT
     else:
-        return {"error": f"{exception_name}"}, HTTPStatus.OK
+        return {"error": f"{type(exception).__name__}"}, HTTPStatus.OK
