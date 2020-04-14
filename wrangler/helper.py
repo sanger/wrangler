@@ -71,7 +71,7 @@ def send_request_to_sequencescape(endpoint: str, body: Dict) -> int:
     Returns:
         int -- the HTTP status code
     """
-    ss_url = f'{app.config["SS_PROTOCOL"]}://{app.config["SS_HOST"]}/{endpoint}'
+    ss_url = f'{app.config["SS_PROTOCOL"]}://{app.config["SS_HOST"]}{endpoint}'
 
     app.logger.info(f"Sending POST to {ss_url}")
 

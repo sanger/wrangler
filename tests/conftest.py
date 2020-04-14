@@ -21,8 +21,8 @@ def app():
             "SS_API_KEY": "123",
             "SS_HOST": "example.com",
             "SS_PROTOCOL": "http",
-            "SS_TUBE_RACK_ENDPOINT": "api/v2/heron/tube_racks",
-            "SS_TUBE_RACK_STATUS_ENDPOINT": "api/v2/heron/tube_rack_statuses",
+            "SS_TUBE_RACK_ENDPOINT": "/api/v2/heron/tube_racks",
+            "SS_TUBE_RACK_STATUS_ENDPOINT": "/api/v2/heron/tube_rack_statuses",
             "TESTING": True,
             "TUBE_RACK_DIR": "./tests/csvs",
         }

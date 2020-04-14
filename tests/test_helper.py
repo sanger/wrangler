@@ -23,7 +23,7 @@ def test_send_request_to_sequencescape(app, client, mocked_responses):
         mocked_responses.add(
             responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED,
         )
-        response = send_request_to_sequencescape("test", {})
+        response = send_request_to_sequencescape("/test", {})
         assert response == HTTPStatus.CREATED
 
 
