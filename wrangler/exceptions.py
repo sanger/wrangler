@@ -56,7 +56,7 @@ class BarcodeNotFoundError(Error):
         self.location = location
 
     def __str__(self):
-        default_message = f"BarcodeNotFoundError: Tube rack barcode not found in/at {self.location}"
+        default_message = f"BarcodeNotFoundError: Tube rack barcode not found in {self.location}"
 
         if self.message:
             return f"{default_message}: {self.message}"

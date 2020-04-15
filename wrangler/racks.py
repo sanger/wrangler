@@ -4,12 +4,7 @@ from flask import Blueprint
 from flask import current_app as app
 
 from .exceptions import BarcodeNotFoundError, BarcodesMismatchError, TubesCountError
-from .helper import (
-    handle_error,
-    parse_tube_rack_csv,
-    send_request_to_sequencescape,
-    wrangle_tubes,
-)
+from .helper import handle_error, parse_tube_rack_csv, send_request_to_sequencescape, wrangle_tubes
 
 bp = Blueprint("racks", __name__)
 
@@ -51,7 +46,7 @@ def wrangle(tube_rack_barcode: str):
     """
     try:
         tube_request_body = wrangle_tubes(tube_rack_barcode)
-        send_request_to_sequencescape(tube_request_body)
+        send_request_to_sequencescape(app.config["SS_TUBE_RACK_ENDPOINT"], tube_request_body)
         return "POST request successfully sent to Sequencescape", HTTPStatus.OK
     except (TubesCountError, BarcodesMismatchError, BarcodeNotFoundError) as e:
         return handle_error(e, tube_rack_barcode)
