@@ -16,7 +16,7 @@ flake8-bugbear = "*"
 
 [packages]
 flask = "~=1.1"
-python-dotenv = "~=0.12"
+python-dotenv = "~=0.13"
 gunicorn = "~=20.0"
 mysql-connector-python = "~=8.0"
 requests = "~=2.23"
