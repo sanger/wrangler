@@ -7,7 +7,8 @@ import requests
 from flask import current_app as app
 
 from wrangler.constants import PLATE, STATUS_VALIDATION_FAILED, TUBE_RACK
-from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError
+from wrangler.exceptions import (BarcodeNotFoundError,
+                                 IndeterminableLabwareError)
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ def send_request_to_sequencescape(endpoint: str, body: Dict[str, Any]) -> Option
     Returns:
         int -- the HTTP status code
     """
-    ss_url = f'{app.config["SS_PROTOCOL"]}://{app.config["SS_HOST"]}{endpoint}'
+    ss_url = f'http://{app.config["SS_HOST"]}{endpoint}'
 
     logger.info(f"Sending POST to {ss_url}")
 
@@ -67,6 +68,15 @@ def send_request_to_sequencescape(endpoint: str, body: Dict[str, Any]) -> Option
 
 
 def get_entity_uuid(entity: str, entity_name: str) -> str:
+    """Gets an entity's UUID from Sequencescape.
+
+    Arguments:
+        entity {str} -- the entity in question, e.g. 'study'
+        entity_name {str} -- the name of a particular entity to search for, e.g. 'Heron'
+
+    Returns:
+        str -- the UUID of the entity
+    """
     SS_HEADERS = {"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
 
     response = requests.get(
@@ -104,23 +114,24 @@ def error_request_body(exception: Exception, tube_rack_barcode: str) -> Dict:
     return body
 
 
-def handle_error(exception: Exception, tube_rack_barcode: str) -> Tuple[Dict, HTTPStatus]:
-    """Handle the execption raised by logging it and sending the error to Sequencescape.
+def handle_error(
+    exception: Exception, labware_barcode: str, endpoint: str
+) -> Tuple[Dict[str, str], HTTPStatus]:
+    """Handle the exception raised by logging it and creating a status record in SS for the specific
+    entity.
 
     Arguments:
         exception {Exception} -- the exception raised
-        tube_rack_barcode {str} -- the barcode of the tube rack in question
+        labware_barcode {str} -- the barcode of the labware in question
+        endpoint {str} -- where to create the status entity record
 
     Returns:
-        Tuple[Dict, HTTPStatus] -- this gets returned by the Flask view and is converted to a Flask
-        Response object
+        Tuple[Dict[str, str], HTTPStatus] -- this gets returned by the Flask view and is converted
+        to a Flask Response object
     """
     logger.exception(exception)
 
-    send_request_to_sequencescape(
-        app.config["SS_TUBE_RACK_STATUS_ENDPOINT"],
-        error_request_body(exception, tube_rack_barcode),
-    )
+    send_request_to_sequencescape(endpoint, error_request_body(exception, labware_barcode))
 
     if type(exception) == BarcodeNotFoundError:
         return {}, HTTPStatus.NO_CONTENT
@@ -129,6 +140,20 @@ def handle_error(exception: Exception, tube_rack_barcode: str) -> Tuple[Dict, HT
 
 
 def determine_labware_type(records: List[Dict[str, str]]) -> str:
+    """Determine the type of labware in the MLWH table by inspecting the records.
+
+    * If all the records have a tube barcode, assume it is a tube rack
+    * If all the records' tube barcode field is empty, assume it is a plate
+
+    Arguments:
+        records {List[Dict[str, str]]} -- records from the MLWH
+
+    Raises:
+        IndeterminableLabwareError: when the labware type is not discernable
+
+    Returns:
+        str -- labware type
+    """
     if all([record["tube_barcode"] for record in records]):
         return TUBE_RACK
 

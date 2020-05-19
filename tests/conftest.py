@@ -9,7 +9,6 @@ from wrangler.db import get_db, get_db_connection, init_db
 
 @pytest.fixture
 def app():
-    # don't commit changes to following environment variables because tests in builds rely on them
     app = create_app(test_config_path="config/test.py")
 
     with app.app_context():
@@ -21,6 +20,12 @@ def app():
                 get_db().execute(statement)
             get_db_connection().commit()
 
+    yield app
+
+
+@pytest.fixture
+def app_db_less():
+    app = create_app(test_config_path="config/test.py")
     yield app
 
 
