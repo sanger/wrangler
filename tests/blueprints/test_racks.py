@@ -1,7 +1,6 @@
 from http import HTTPStatus
 
 TUBE_RACK_URL = "/tube_rack"
-WRANGLE_URL = "/wrangle"
 VALID_BARCODE = "DN123"
 INVALID_BARCODE = "DN_invalid"
 LESS_TUBES_BARCODE = "DN_lesstubes"
@@ -40,32 +39,3 @@ def test_valid_tube_rack_file(client):
     response = client.get(f"{TUBE_RACK_URL}/{VALID_BARCODE}")
     assert response.status_code == HTTPStatus.OK
     assert response.get_json() == output
-
-
-def test_fail_if_num_tubes_from_layout_and_mlwh_do_not_match(client):
-    response = client.get(f"{WRANGLE_URL}/{LESS_TUBES_BARCODE}")
-    assert response.status_code == HTTPStatus.OK
-    assert "TubesCountError" in response.get_json()["error"]
-
-
-def test_fail_if_any_tube_barcode_different_between_layout_and_mlwh(client):
-    response = client.get(f"{WRANGLE_URL}/{DIFF_TUBES_BARCODE}")
-    assert response.status_code == HTTPStatus.OK
-    assert "BarcodesMismatchError" in response.get_json()["error"]
-
-
-def test_valid_barcode_wrangle(client):
-    response = client.get(f"{WRANGLE_URL}/{VALID_BARCODE}")
-    assert response.status_code == HTTPStatus.OK
-    assert response.data == b"POST request successfully sent to Sequencescape"
-
-
-def test_invalid_barcode_wrangle(client):
-    response = client.get(f"{WRANGLE_URL}/{INVALID_BARCODE}")
-    assert response.status_code == HTTPStatus.NO_CONTENT
-
-
-def test_size48_wrangle(client):
-    response = client.get(f"{WRANGLE_URL}/{SIZE48_BARCODE}")
-    assert response.status_code == HTTPStatus.OK
-    assert response.data == b"POST request successfully sent to Sequencescape"

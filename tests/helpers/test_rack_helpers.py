@@ -28,8 +28,8 @@ def test_validate_tubes_different_order():
     assert validate_tubes({"T1": 1, "T2": 1}, {"T2": 1, "T1": 1}) is True
 
 
-def test_parse_tube_rack_csv(app):
-    with app.app_context():
+def test_parse_tube_rack_csv(app_db_less):
+    with app_db_less.app_context():
         assert parse_tube_rack_csv("DN123") == {
             "rack_barcode": "DN123",
             "layout": {
@@ -46,11 +46,11 @@ def test_parse_tube_rack_csv(app):
             assert parse_tube_rack_csv("blah") is None
 
 
-def test_parse_tube_rack_csv_ignores_no_read(app, client, tmpdir):
-    with app.app_context():
+def test_parse_tube_rack_csv_ignores_no_read(app_db_less, client, tmpdir):
+    with app_db_less.app_context():
         sub = tmpdir.mkdir("sub")
         myfile = sub.join("DN456.csv")
-        app.config["TUBE_RACK_DIR"] = sub
+        app_db_less.config["TUBE_RACK_DIR"] = sub
         content = "\n".join(["A01, F001", "B01, NO READ", "C01, F002"])
 
         myfile.write(content)
@@ -62,7 +62,7 @@ def test_parse_tube_rack_csv_ignores_no_read(app, client, tmpdir):
         assert parse_tube_rack_csv("DN456") == expected_message
 
 
-def test_create_tube_rack_body(app):
+def test_create_tube_rack_body():
     tubes = [
         {"coordinate": "A01", "barcode": "TB123", "supplier_sample_id": "xyz123"},
         {"coordinate": "A02", "barcode": "TB456", "supplier_sample_id": "xyz456"},
@@ -72,5 +72,4 @@ def test_create_tube_rack_body(app):
     tube_rack_response = {"tube_rack": {"barcode": tube_rack_barcode, "size": size, "tubes": tubes}}
     body = {"data": {"attributes": tube_rack_response}}
 
-    with app.app_context():
-        assert create_tube_rack_body(size, tube_rack_barcode, tubes) == body
+    assert create_tube_rack_body(size, tube_rack_barcode, tubes) == body

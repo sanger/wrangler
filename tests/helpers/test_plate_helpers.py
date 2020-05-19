@@ -7,7 +7,7 @@ from wrangler.constants import PLATE_PURPOSE_ENTITY, PLATE_PURPOSE_STOCK, STUDY_
 from wrangler.helpers.plate_helpers import create_plate_body
 
 
-def test_create_plate_body(app, mocked_responses):
+def test_create_plate_body(app_db_less, mocked_responses):
     samples = [
         {"coordinate": "A01", "supplie_sample_id": "xyz123"},
         {"coordinate": "A02", "supplie_sample_id": "xyz456"},
@@ -26,7 +26,7 @@ def test_create_plate_body(app, mocked_responses):
         "wells_content": wells_content,
     }
 
-    with app.app_context():
+    with app_db_less.app_context():
         ss_url = f'http://{current_app.config["SS_HOST"]}'
         studies_endpoint = f"/api/v2/{STUDY_ENTITY}?filter[name]={STUDY_HERON}"
         plate_purpose_endpoint = (

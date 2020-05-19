@@ -4,7 +4,8 @@ from http import HTTPStatus
 from flask import Blueprint
 from flask import current_app as app
 
-from wrangler.helpers.general_helpers import send_request_to_sequencescape
+from wrangler.exceptions import BarcodeNotFoundError, BarcodesMismatchError, TubesCountError
+from wrangler.helpers.general_helpers import handle_error
 from wrangler.helpers.labware_helpers import wrangle_labware
 
 bp = Blueprint("labware", __name__)
@@ -24,11 +25,15 @@ def wrangle(labware_barcode: str):
         Dict -- a dict with the results or description of the error with "error" as the key
     """
     try:
-        tube_request_body = wrangle_labware(labware_barcode)
-        send_request_to_sequencescape(app.config["SS_TUBE_RACK_ENDPOINT"], tube_request_body)
-        return "POST request successfully sent to Sequencescape", HTTPStatus.OK
-    # except (TubesCountError, BarcodesMismatchError, BarcodeNotFoundError) as e:
-    #     return handle_error(e, labware_barcode)
+        return wrangle_labware(labware_barcode)
+    except (TubesCountError, BarcodesMismatchError) as e:
+        return handle_error(e, labware_barcode, app.config["SS_TUBE_RACK_STATUS_ENDPOINT"])
+    except BarcodeNotFoundError as e:
+        logger.exception(e)
+        return (
+            {"error": f"{type(e).__name__}"},
+            HTTPStatus.BAD_REQUEST,
+        )
     except Exception as e:
         logger.exception(e)
         return (

@@ -1,19 +1,23 @@
 import logging
-from typing import Any, Dict
+from typing import Dict, Tuple
 
 from flask import current_app as app
 
 from wrangler.constants import PLATE, TUBE_RACK
 from wrangler.db import get_db
 from wrangler.exceptions import BarcodeNotFoundError
-from wrangler.helpers.general_helpers import csv_file_exists, determine_labware_type
+from wrangler.helpers.general_helpers import (
+    csv_file_exists,
+    determine_labware_type,
+    send_request_to_sequencescape,
+)
 from wrangler.helpers.plate_helpers import create_plate_body
 from wrangler.helpers.rack_helpers import parse_tube_rack_csv, wrangle_tube_rack
 
 logger = logging.getLogger(__name__)
 
 
-def wrangle_labware(labware_barcode: str) -> Dict[str, Any]:
+def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
     """The wrangler wrangles with the labware barcode provided. It looks for a CSV file with that
     barcode and retrieves any data for that barcode in the MLWH table.
 
@@ -58,11 +62,15 @@ def wrangle_labware(labware_barcode: str) -> Dict[str, Any]:
         labware_type = determine_labware_type(results)
 
         if csv_exists and labware_type == TUBE_RACK:
-            return wrangle_tube_rack(labware_barcode, tubes_and_coordinates, results)
+            ss_request_body = wrangle_tube_rack(labware_barcode, tubes_and_coordinates, results)
+            return send_request_to_sequencescape(
+                app.config["SS_TUBE_RACK_ENDPOINT"], ss_request_body
+            )
 
         if not csv_exists and labware_type == PLATE:
-            return create_plate_body(labware_barcode, results)
+            ss_request_body = create_plate_body(labware_barcode, results)
+            return send_request_to_sequencescape(app.config["SS_PLATE_ENDPOINT"], ss_request_body)
 
-        return {}
+        raise Exception("something is very wrong")
     else:
         raise BarcodeNotFoundError("MLWH")

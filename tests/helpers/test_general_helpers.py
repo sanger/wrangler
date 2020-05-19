@@ -21,13 +21,14 @@ def test_send_request_to_sequencescape(app_db_less, mocked_responses):
         ss_url = f'http://{current_app.config["SS_HOST"]}/test'
 
         mocked_responses.add(
-            responses.POST, ss_url, status=HTTPStatus.CREATED,
+            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED,
         )
         mocked_responses.add(responses.POST, ss_url, body=Exception("blah"))
 
-        assert send_request_to_sequencescape("/test", {}) == HTTPStatus.CREATED
+        assert send_request_to_sequencescape("/test", {}) == ({}, HTTPStatus.CREATED)
 
-        assert send_request_to_sequencescape("/test", {}) is None
+        with raises(Exception):
+            send_request_to_sequencescape("/test", {})
 
 
 def test_handle_error(app_db_less, mocked_responses):
@@ -40,10 +41,10 @@ def test_handle_error(app_db_less, mocked_responses):
         )
 
         mocked_responses.add(
-            responses.POST, ss_url, status=HTTPStatus.CREATED,
+            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED,
         )
         mocked_responses.add(
-            responses.POST, ss_url, status=HTTPStatus.CREATED,
+            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED,
         )
 
         assert handle_error(

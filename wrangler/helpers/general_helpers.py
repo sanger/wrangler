@@ -1,14 +1,13 @@
 import logging
 from http import HTTPStatus
 from os.path import getsize, isfile, join
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 import requests
 from flask import current_app as app
 
 from wrangler.constants import PLATE, STATUS_VALIDATION_FAILED, TUBE_RACK
-from wrangler.exceptions import (BarcodeNotFoundError,
-                                 IndeterminableLabwareError)
+from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,9 @@ def csv_file_exists(filename: str) -> bool:
         return False
 
 
-def send_request_to_sequencescape(endpoint: str, body: Dict[str, Any]) -> Optional[int]:
+def send_request_to_sequencescape(
+    endpoint: str, body: Dict[str, Any]
+) -> Tuple[Dict[str, str], int]:
     """Send a POST request to Sequencescape with the body provided.
 
     Arguments:
@@ -55,16 +56,11 @@ def send_request_to_sequencescape(endpoint: str, body: Dict[str, Any]) -> Option
         "Content-Type": "application/vnd.api+json",
     }
 
-    try:
-        response = requests.post(ss_url, json=body, headers=headers)
+    response = requests.post(ss_url, json=body, headers=headers)
 
-        logger.debug(f"Response code from SS: {response.status_code}")
+    logger.debug(f"Response code from SS: {response.status_code}")
 
-        return response.status_code
-    except Exception as e:
-        logger.exception(e)
-
-        return None
+    return response.json(), response.status_code
 
 
 def get_entity_uuid(entity: str, entity_name: str) -> str:
@@ -77,11 +73,14 @@ def get_entity_uuid(entity: str, entity_name: str) -> str:
     Returns:
         str -- the UUID of the entity
     """
-    SS_HEADERS = {"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
+    headers = {
+        "X-Sequencescape-Client-Id": app.config["SS_API_KEY"],
+        "Content-Type": "application/vnd.api+json",
+    }
 
     response = requests.get(
         f"http://{app.config['SS_HOST']}/api/v2/{entity}?filter[name]={entity_name}",
-        headers=SS_HEADERS,
+        headers=headers,
     )
     uuid = response.json()["data"]["attributes"]["uuid"]
 
