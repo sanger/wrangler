@@ -4,15 +4,14 @@ import responses
 from flask import current_app
 from pytest import raises
 
-from wrangler.exceptions import BarcodeNotFoundError, BarcodesMismatchError, TubesCountError
-from wrangler.helper import (
-    STATUS_VALIDATION_FAILED,
+from wrangler.constants import PLATE, STATUS_VALIDATION_FAILED, TUBE_RACK
+from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError
+from wrangler.helpers.general_helpers import (
+    csv_file_exists,
+    determine_labware_type,
     error_request_body,
     handle_error,
-    parse_tube_rack_csv,
     send_request_to_sequencescape,
-    validate_tubes,
-    wrangle_tubes,
 )
 
 
@@ -27,7 +26,7 @@ def test_send_request_to_sequencescape(app, client, mocked_responses):
         assert response == HTTPStatus.CREATED
 
 
-def test_wrangle_tubes(app, client):
+def test_wrangle_labware(app, client):
     output = {
         "data": {
             "attributes": {
@@ -71,62 +70,22 @@ def test_wrangle_tubes(app, client):
         }
     }
     with app.app_context():
-        tube_request_body = wrangle_tubes("DN123")
+        tube_request_body = wrangle_labware("DN123")
 
         assert tube_request_body == output
 
         with raises(BarcodeNotFoundError):
-            wrangle_tubes("")
+            wrangle_labware("")
 
 
-def test_wrangle_tubes_size_48(app, client):
+def test_wrangle_labware_size_48(app, client):
     with app.app_context():
-        tube_request_body = wrangle_tubes("DN_size48")
+        tube_request_body = wrangle_labware("DN_size48")
 
         assert tube_request_body["data"]["attributes"]["tube_rack"]["size"] == 48
 
         with raises(BarcodeNotFoundError):
-            wrangle_tubes("")
-
-
-def test_validate_tubes_different_barcodes():
-    with raises(BarcodesMismatchError):
-        assert validate_tubes({"T1": 1, "T2": 2}, {"T2": 1, "T3": 1})
-
-
-def test_validate_tubes_more_in_layout():
-    with raises(TubesCountError):
-        assert validate_tubes({"T1": 1, "T2": 2}, {"T2": 1})
-
-
-def test_validate_tubes_less_in_layout():
-    with raises(TubesCountError):
-        assert validate_tubes({"T1": 1}, {"T1": 1, "T2": 1})
-
-
-def test_validate_tubes_duplication():
-    with raises(TubesCountError):
-        assert validate_tubes({"T1": 1, "T1": 1}, {"T1": 1, "T2": 1})
-
-
-def test_validate_tubes_different_order():
-    assert validate_tubes({"T1": 1, "T2": 1}, {"T2": 1, "T1": 1}) is True
-
-
-def test_parse_tube_rack_csv_ignores_no_read(app, client, tmpdir):
-    with app.app_context():
-        sub = tmpdir.mkdir("sub")
-        myfile = sub.join("DN456.csv")
-        app.config["TUBE_RACK_DIR"] = sub
-        content = "\n".join(["A01, F001", "B01, NO READ", "C01, F002"])
-
-        myfile.write(content)
-
-        expected_message = {
-            "rack_barcode": "DN456",
-            "layout": {"F001": "A01", "F002": "C01"},
-        }
-        assert parse_tube_rack_csv("DN456") == expected_message
+            wrangle_labware("")
 
 
 def test_handle_error(app):
@@ -157,3 +116,21 @@ def test_error_request_body():
         }
     }
     assert error_request_body(exception, tube_rack_barcode) == body
+
+
+def test_csv_file_exists(app):
+    with app.app_context():
+        assert csv_file_exists("DN123.csv") is True
+        assert csv_file_exists("does not exist") is False
+
+
+def test_determine_labware_type(app):
+    with app.app_context():
+        assert (
+            determine_labware_type([{"tube_barcode": "123"}, {"tube_barcode": "456"}]) == TUBE_RACK
+        )
+
+        assert determine_labware_type([{"tube_barcode": None}, {"tube_barcode": None}]) == PLATE
+
+        with raises(IndeterminableLabwareError):
+            determine_labware_type([{"tube_barcode": None}, {"tube_barcode": "123"}])

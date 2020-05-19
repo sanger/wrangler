@@ -2,8 +2,8 @@ CREATE DATABASE IF NOT EXISTS `mlwarehouse_dev` /*!40100 DEFAULT CHARACTER SET l
 DROP TABLE IF EXISTS `mlwarehouse_dev`.`cgap_heron`;
 CREATE TABLE `mlwarehouse_dev`.`cgap_heron` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
-    `tube_rack_barcode` VARCHAR(255) NOT NULL,
-    `tube_barcode` VARCHAR(255) NOT NULL,
+    `container_barcode` VARCHAR(255) NOT NULL,
+    `tube_barcode` VARCHAR(255),
     `supplier_sample_id` VARCHAR(255) NOT NULL,
     `position` VARCHAR(45) NOT NULL,
     PRIMARY KEY (`id`)
