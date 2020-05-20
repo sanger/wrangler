@@ -3,6 +3,7 @@ from http import HTTPStatus
 from os.path import getsize, isfile, join
 from typing import Dict, Tuple
 
+import re
 import requests
 from flask import current_app as app
 
@@ -154,15 +155,16 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
         # tube barcodes in the parsed CSV file - if these are not the same, exit early
         validate_tubes(tubes_and_coordinates["layout"], tube_sample_dict)
 
-        tubes = []
+        tubes = {}
         for tube_barcode, coordinate in tubes_and_coordinates["layout"].items():
-            tubes.append(
-                {
-                    "coordinate": coordinate,
-                    "barcode": tube_barcode,
-                    "supplier_sample_id": tube_sample_dict[tube_barcode],
+            tubes[coordinate] = {
+                "barcode": tube_barcode,
+                "content": {
+                    "supplier_name": tube_sample_dict[tube_barcode],
+                    "control": control_for(tube_sample_dict[tube_barcode]),
+                    "control_type": control_type_for(tube_sample_dict[tube_barcode])
                 }
-            )
+            }
 
         app.logger.debug(f"tubes: {tubes}")
 
@@ -227,3 +229,32 @@ def handle_error(exception: Exception, tube_rack_barcode: str) -> Tuple[Dict, HT
         return {}, HTTPStatus.NO_CONTENT
     else:
         return {"error": f"{type(exception).__name__}"}, HTTPStatus.OK
+
+
+def control_for(supplier_sample_id: str):
+    """Checks if a sample received is a control sample.
+
+    Arguments:
+        supplier_sample_id -- the supplier sample id of a sample from Cgap Heron
+
+    Returns:
+        Boolean -- If the supplier_sample id is a control it returns true, otherwise false
+    """
+    return re.match("/control/i", supplier_sample_id)
+
+def control_type_for(supplier_sample_id: str):
+    """Returns the type of control sample for a supplier sample id provided
+
+    Arguments:
+        supplier_sample_id -- the supplier sample id of a sample from Cgap Heron
+
+    Returns:
+        String -- "Positive" if the supplier_sample id is a positive control, "Negative if is a negative control"
+    """
+    if re.match("positive", text, re.IGNORECASE):
+        return 'positive_control'
+    if re.match("negative", text, re.IGNORECASE):
+        return 'negative_control'
+    if re.match("control", text, re.IGNORECASE):
+        return 'control'
+    return "not_control"
