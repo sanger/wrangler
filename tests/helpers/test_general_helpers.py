@@ -53,7 +53,7 @@ def test_handle_error(app_db_less, mocked_responses):
 
         assert handle_error(
             Exception("blah"), labware_barcode, current_app.config["SS_TUBE_RACK_STATUS_ENDPOINT"]
-        ) == ({"error": "Exception"}, HTTPStatus.OK)
+        ) == ({"error": "Exception: blah"}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 def test_error_request_body():
@@ -84,13 +84,17 @@ def test_csv_file_exists(app_db_less):
 def test_determine_labware_type(app_db_less):
     with app_db_less.app_context():
         assert (
-            determine_labware_type([{"tube_barcode": "123"}, {"tube_barcode": "456"}]) == TUBE_RACK
+            determine_labware_type("blah", [{"tube_barcode": "123"}, {"tube_barcode": "456"}])
+            == TUBE_RACK
         )
 
-        assert determine_labware_type([{"tube_barcode": None}, {"tube_barcode": None}]) == PLATE
+        assert (
+            determine_labware_type("blah", [{"tube_barcode": None}, {"tube_barcode": None}])
+            == PLATE
+        )
 
         with raises(IndeterminableLabwareError):
-            determine_labware_type([{"tube_barcode": None}, {"tube_barcode": "123"}])
+            determine_labware_type("blah", [{"tube_barcode": None}, {"tube_barcode": "123"}])
 
 
 def test_get_entity_uuid(app_db_less, mocked_responses):
@@ -106,7 +110,7 @@ def test_get_entity_uuid(app_db_less, mocked_responses):
         mocked_responses.add(
             responses.GET,
             ss_url,
-            body=f'{{"data": {{"attributes": {{"uuid": "{uuid}"}}}}}}',
+            body=f'{{"data": [{{"attributes": {{"uuid": "{uuid}"}}}}]}}',
             status=HTTPStatus.OK,
         )
 

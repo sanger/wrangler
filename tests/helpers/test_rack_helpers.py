@@ -6,26 +6,26 @@ from wrangler.helpers.rack_helpers import create_tube_rack_body, parse_tube_rack
 
 def test_validate_tubes_different_barcodes():
     with raises(BarcodesMismatchError):
-        assert validate_tubes({"T1": 1, "T2": 2}, {"T2": 1, "T3": 1})
+        assert validate_tubes("blah", {"T1": 1, "T2": 2}, {"T2": 1, "T3": 1})
 
 
 def test_validate_tubes_more_in_layout():
     with raises(TubesCountError):
-        assert validate_tubes({"T1": 1, "T2": 2}, {"T2": 1})
+        assert validate_tubes("blah", {"T1": 1, "T2": 2}, {"T2": 1})
 
 
 def test_validate_tubes_less_in_layout():
     with raises(TubesCountError):
-        assert validate_tubes({"T1": 1}, {"T1": 1, "T2": 1})
+        assert validate_tubes("blah", {"T1": 1}, {"T1": 1, "T2": 1})
 
 
 def test_validate_tubes_duplication():
     with raises(TubesCountError):
-        assert validate_tubes({"T1": 1, "T1": 1}, {"T1": 1, "T2": 1})
+        assert validate_tubes("blah", {"T1": 1, "T1": 1}, {"T1": 1, "T2": 1})
 
 
 def test_validate_tubes_different_order():
-    assert validate_tubes({"T1": 1, "T2": 1}, {"T2": 1, "T1": 1}) is True
+    assert validate_tubes("blah", {"T1": 1, "T2": 1}, {"T2": 1, "T1": 1}) is True
 
 
 def test_parse_tube_rack_csv(app_db_less):

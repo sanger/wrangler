@@ -40,12 +40,14 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict[str, Any]:
             if "NO READ" not in tube_barcode:
                 layout[tube_barcode] = row[0].strip()
 
+    logger.info(f"{filename} parsed successfully")
+
     tube_rack_dict = {"rack_barcode": tube_rack_barcode, "layout": layout}
 
     return tube_rack_dict
 
 
-def validate_tubes(layout_dict: Dict, database_dict: Dict) -> bool:
+def validate_tubes(tube_rack_barcode: str, layout_dict: Dict, database_dict: Dict) -> bool:
     """Validates that the number of tubes in the tube rack CSV file are the same as those in the
     MLWH.
 
@@ -61,13 +63,15 @@ def validate_tubes(layout_dict: Dict, database_dict: Dict) -> bool:
     Returns:
         [boolean] -- returns True if the validation succeeds
     """
+    logger.debug("Validating tubes")
+
     tubes_layout = list(layout_dict.keys())
     tubes_database = list(database_dict.keys())
 
     if len(tubes_layout) != len(tubes_database):
-        raise TubesCountError()
+        raise TubesCountError(tube_rack_barcode)
     if len(set(tubes_layout) - set(tubes_database)) != 0:
-        raise BarcodesMismatchError()
+        raise BarcodesMismatchError(tube_rack_barcode)
 
     return True
 
@@ -82,7 +86,7 @@ def wrangle_tube_rack(
 
     # we need to compare the count of records in the MLWH with the count of valid tube barcodes in
     #   the parsed CSV file - if these are not the same, exit early
-    validate_tubes(tubes_and_coordinates["layout"], tube_sample_dict)
+    validate_tubes(tube_rack_barcode, tubes_and_coordinates["layout"], tube_sample_dict)
 
     tubes = []
     for tube_barcode, coordinate in tubes_and_coordinates["layout"].items():

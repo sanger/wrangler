@@ -27,6 +27,7 @@ def get_tubes_from_rack_barcode(tube_rack_barcode: str) -> Tuple[Dict[str, str],
         Dict -- a dict with the results or description of the error with "error" as the key
     """
     try:
+        logger.info(f"Looking for tube rack with barcode '{tube_rack_barcode}'")
         if not csv_file_exists(f"{tube_rack_barcode}.csv"):
             raise CsvNotFoundError(tube_rack_barcode)
 

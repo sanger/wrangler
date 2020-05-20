@@ -53,7 +53,8 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
 
         logger.debug(results)
 
-        labware_type = determine_labware_type(results)
+        labware_type = determine_labware_type(labware_barcode, results)
+        logger.info(f"Determined labware type: {labware_type}")
 
         if labware_type == TUBE_RACK:
             if csv_file_exists(f"{labware_barcode}.csv"):
@@ -68,8 +69,9 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
 
         if labware_type == PLATE:
             ss_request_body = create_plate_body(labware_barcode, results)
+
             return send_request_to_sequencescape(app.config["SS_PLATE_ENDPOINT"], ss_request_body)
 
         return {}, HTTPStatus.INTERNAL_SERVER_ERROR
     else:
-        raise BarcodeNotFoundError
+        raise BarcodeNotFoundError(labware_barcode)

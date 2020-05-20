@@ -19,7 +19,7 @@ def test_fail_if_num_tubes_from_layout_and_mlwh_do_not_match(app, client, mocked
         )
         mocked_responses.add(responses.POST, ss_url, body="{}", status=HTTPStatus.OK)
         response = client.post(f"{WRANGLE_URL}/{LESS_TUBES_BARCODE}")
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert "TubesCountError" in response.get_json()["error"]
 
 
@@ -31,7 +31,7 @@ def test_fail_if_any_tube_barcode_different_between_layout_and_mlwh(app, client,
         )
         mocked_responses.add(responses.POST, ss_url, body="{}", status=HTTPStatus.OK)
         response = client.post(f"{WRANGLE_URL}/{DIFF_TUBES_BARCODE}")
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert "BarcodesMismatchError" in response.get_json()["error"]
 
 

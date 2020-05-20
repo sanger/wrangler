@@ -13,7 +13,7 @@ def create_plate_body(plate_barcode: str, mlwh_results: List[Dict[str, str]]) ->
         well = {
             "supplier_name": sample["supplier_sample_id"],
         }
-        wells_content[sample["coordinate"]] = well
+        wells_content[sample["position"]] = well
 
     body = {
         "barcode": plate_barcode,

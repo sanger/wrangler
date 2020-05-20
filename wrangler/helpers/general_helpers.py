@@ -34,7 +34,7 @@ def csv_file_exists(filename: str) -> bool:
 
         return True
     else:
-        logger.warning(f"File not found: {filename}")
+        logger.warning(f"File not found: {full_path_to_find}")
 
         return False
 
@@ -77,15 +77,19 @@ def get_entity_uuid(entity: str, entity_name: str) -> str:
     Returns:
         str -- the UUID of the entity
     """
+    logger.info(f"Getting UUID for '{entity}' - '{entity_name}'")
+
     url = f"http://{app.config['SS_HOST']}/api/v2/{entity}?filter[name]={entity_name}"
 
-    logger.debug(f"Sending POST to {url}")
+    logger.debug(f"Sending GET to {url}")
 
     response = requests.get(
         url, headers={**SS_HEADERS, "X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
     )
 
-    return response.json()["data"]["attributes"]["uuid"]
+    logger.debug(response.json())
+
+    return response.json()["data"][0]["attributes"]["uuid"]
 
 
 def error_request_body(exception: Exception, tube_rack_barcode: str) -> Dict:
@@ -116,7 +120,7 @@ def error_request_body(exception: Exception, tube_rack_barcode: str) -> Dict:
 
 def handle_error(
     exception: Exception, labware_barcode: str, endpoint: str
-) -> Tuple[Dict[str, str], HTTPStatus]:
+) -> Tuple[Dict[str, str], int]:
     """Handle the exception raised by logging it and creating a status record in SS for the specific
     entity.
 
@@ -126,8 +130,8 @@ def handle_error(
         endpoint {str} -- where to create the status entity record
 
     Returns:
-        Tuple[Dict[str, str], HTTPStatus] -- this gets returned by the Flask view and is converted
-        to a Flask Response object
+        Tuple[Dict[str, str], int] -- this gets returned by the Flask view and is converted to a
+        Flask Response object
     """
     logger.exception(exception)
 
@@ -136,10 +140,13 @@ def handle_error(
     if type(exception) == BarcodeNotFoundError:
         return {}, HTTPStatus.NO_CONTENT
     else:
-        return {"error": f"{type(exception).__name__}"}, HTTPStatus.OK
+        return (
+            {"error": f"{type(exception).__name__}: {str(exception)}"},
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+        )
 
 
-def determine_labware_type(records: List[Dict[str, str]]) -> str:
+def determine_labware_type(labware_barcode: str, records: List[Dict[str, str]]) -> str:
     """Determine the type of labware in the MLWH table by inspecting the records.
 
     - If all the records have a tube barcode, assume it is a tube rack
@@ -160,4 +167,4 @@ def determine_labware_type(records: List[Dict[str, str]]) -> str:
     if len(list(filter(lambda record: record["tube_barcode"] is not None, records))) == 0:
         return PLATE
 
-    raise IndeterminableLabwareError
+    raise IndeterminableLabwareError(labware_barcode)

@@ -29,11 +29,9 @@ LOGGING: Dict[str, Any] = {
     "formatters": {
         "colored": {
             "()": "colorlog.ColoredFormatter",
-            "format": "%(asctime)-15s %(name)-16s:%(lineno)-3s %(log_color)s%(levelname)-7s %(message)s",
+            "format": "%(asctime)-15s %(name)-33s:%(lineno)-3s %(log_color)s%(levelname)-7s %(message)s",
         },
-        "verbose": {
-            "format": "%(asctime)-15s %(name)-16s:%(lineno)-3s %(levelname)-7s %(message)s"
-        },
+        "verbose": {"format": "%(asctime)-15s %(name)s:%(lineno)s %(levelname)s %(message)s"},
     },
     "handlers": {
         "colored_stream": {
