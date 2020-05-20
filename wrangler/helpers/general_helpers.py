@@ -11,6 +11,10 @@ from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError
 
 logger = logging.getLogger(__name__)
 
+SS_HEADERS = {
+    "Content-Type": "application/vnd.api+json",
+}
+
 
 def csv_file_exists(filename: str) -> bool:
     """Check of the CSV file exists.
@@ -42,21 +46,21 @@ def send_request_to_sequencescape(
 
     Arguments:
         endpoint {str} -- the endpoint to which to send the request
-        body {dict} -- the JSON body to send with the request
+        body {Dict[str, Any]} -- the body to send with the request
 
     Returns:
-        int -- the HTTP status code
+        Tuple[Dict[str, str], int] -- the body in JSON and the status code of the response from
+        Sequencescape
     """
-    ss_url = f'http://{app.config["SS_HOST"]}{endpoint}'
+    url = f'http://{app.config["SS_HOST"]}{endpoint}'
 
-    logger.info(f"Sending POST to {ss_url}")
+    logger.debug(f"Sending POST to {url}")
 
-    headers = {
-        "X-Sequencescape-Client-Id": app.config["SS_API_KEY"],
-        "Content-Type": "application/vnd.api+json",
-    }
-
-    response = requests.post(ss_url, json=body, headers=headers)
+    response = requests.post(
+        url,
+        json=body,
+        headers={**SS_HEADERS, "X-Sequencescape-Client-Id": app.config["SS_API_KEY"]},
+    )
 
     logger.debug(f"Response code from SS: {response.status_code}")
 
@@ -73,18 +77,15 @@ def get_entity_uuid(entity: str, entity_name: str) -> str:
     Returns:
         str -- the UUID of the entity
     """
-    headers = {
-        "X-Sequencescape-Client-Id": app.config["SS_API_KEY"],
-        "Content-Type": "application/vnd.api+json",
-    }
+    url = f"http://{app.config['SS_HOST']}/api/v2/{entity}?filter[name]={entity_name}"
+
+    logger.debug(f"Sending POST to {url}")
 
     response = requests.get(
-        f"http://{app.config['SS_HOST']}/api/v2/{entity}?filter[name]={entity_name}",
-        headers=headers,
+        url, headers={**SS_HEADERS, "X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
     )
-    uuid = response.json()["data"]["attributes"]["uuid"]
 
-    return uuid
+    return response.json()["data"]["attributes"]["uuid"]
 
 
 def error_request_body(exception: Exception, tube_rack_barcode: str) -> Dict:
@@ -141,8 +142,8 @@ def handle_error(
 def determine_labware_type(records: List[Dict[str, str]]) -> str:
     """Determine the type of labware in the MLWH table by inspecting the records.
 
-    * If all the records have a tube barcode, assume it is a tube rack
-    * If all the records' tube barcode field is empty, assume it is a plate
+    - If all the records have a tube barcode, assume it is a tube rack
+    - If all the records' tube barcode field is empty, assume it is a plate
 
     Arguments:
         records {List[Dict[str, str]]} -- records from the MLWH

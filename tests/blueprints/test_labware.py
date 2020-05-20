@@ -49,7 +49,7 @@ def test_valid_barcode_wrangle(app, client, mocked_responses):
 
 def test_invalid_barcode_wrangle(client):
     response = client.post(f"{WRANGLE_URL}/{INVALID_BARCODE}")
-    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_size48_wrangle(app, client, mocked_responses):

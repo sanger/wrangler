@@ -4,7 +4,12 @@ from http import HTTPStatus
 from flask import Blueprint
 from flask import current_app as app
 
-from wrangler.exceptions import BarcodeNotFoundError, BarcodesMismatchError, TubesCountError
+from wrangler.exceptions import (
+    BarcodeNotFoundError,
+    BarcodesMismatchError,
+    CsvNotFoundError,
+    TubesCountError,
+)
 from wrangler.helpers.general_helpers import handle_error
 from wrangler.helpers.labware_helpers import wrangle_labware
 
@@ -26,7 +31,7 @@ def wrangle(labware_barcode: str):
     """
     try:
         return wrangle_labware(labware_barcode)
-    except (TubesCountError, BarcodesMismatchError) as e:
+    except (TubesCountError, BarcodesMismatchError, CsvNotFoundError) as e:
         return handle_error(e, labware_barcode, app.config["SS_TUBE_RACK_STATUS_ENDPOINT"])
     except BarcodeNotFoundError as e:
         logger.exception(e)

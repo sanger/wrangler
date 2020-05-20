@@ -44,19 +44,17 @@ class BarcodesMismatchError(Error):
 
 
 class BarcodeNotFoundError(Error):
-    """Raised when a tube rack barcode is not found in a location.
+    """Raised when a labware barcode is not found in the MLWH.
 
     Attributes:
-        location -- where the barcode was expected to be
         message -- the extra message to be added to the exception
     """
 
-    def __init__(self, location, message=None):
+    def __init__(self, message=None):
         self.message = message
-        self.location = location
 
     def __str__(self):
-        default_message = f"BarcodeNotFoundError: Tube rack barcode not found in {self.location}"
+        default_message = "BarcodeNotFoundError: Labware barcode not found in the MLWH."
 
         if self.message:
             return f"{default_message}: {self.message}"
