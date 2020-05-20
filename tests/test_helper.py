@@ -13,7 +13,15 @@ from wrangler.helper import (
     send_request_to_sequencescape,
     validate_tubes,
     wrangle_tubes,
+    control_for,
+    control_type_for,
+    add_control_sample_if_present,
+    PURPOSE_TR_STOCK_48,
 )
+
+import wrangler.helper
+
+from unittest import mock
 
 
 def test_send_request_to_sequencescape(app, client, mocked_responses):
@@ -33,60 +41,110 @@ def test_wrangle_tubes(app, client):
             "attributes": {
                 "tube_rack": {
                     "barcode": "DN123",
-                    "size": 96,
-                    "tubes": [
-                        {
-                            "coordinate": "A01",
-                            "barcode": "TB123",
-                            "supplier_sample_id": "PHEC-nnnnnnn2",
-                        },
-                        {
-                            "coordinate": "A02",
-                            "barcode": "TB124",
-                            "supplier_sample_id": "PHEC-nnnnnnn3",
-                        },
-                        {
-                            "coordinate": "A03",
-                            "barcode": "TB125",
-                            "supplier_sample_id": "PHEC-nnnnnnn4",
-                        },
-                        {
-                            "coordinate": "B01",
-                            "barcode": "TB126",
-                            "supplier_sample_id": "PHEC-nnnnnnn5",
-                        },
-                        {
-                            "coordinate": "B02",
-                            "barcode": "TB127",
-                            "supplier_sample_id": "PHEC-nnnnnnn6",
-                        },
-                        {
-                            "coordinate": "B03",
-                            "barcode": "TB128",
-                            "supplier_sample_id": "PHEC-nnnnnnn7",
-                        },
-                    ],
+                    "purpose_uuid": "TESTING_PURPOSE_UUID",
+                    "study_uuid": "TESTING_STUDY_UUID",
+                    "tubes": {
+                        "A01": {"barcode": "TB123", "content": {"supplier_name": "PHEC-nnnnnnn2"}},
+                        "A02": {"barcode": "TB124", "content": {"supplier_name": "PHEC-nnnnnnn3"}},
+                        "A03": {"barcode": "TB125", "content": {"supplier_name": "PHEC-nnnnnnn4"}},
+                        "B01": {"barcode": "TB126", "content": {"supplier_name": "PHEC-nnnnnnn5"}},
+                        "B02": {"barcode": "TB127", "content": {"supplier_name": "PHEC-nnnnnnn6"}},
+                        "B03": {"barcode": "TB128", "content": {"supplier_name": "PHEC-nnnnnnn7"}},
+                    },
                 }
             }
         }
     }
     with app.app_context():
-        tube_request_body = wrangle_tubes("DN123")
+        with mock.patch.object(
+            wrangler.helper, "get_study_uuid", return_value="TESTING_STUDY_UUID"
+        ):
+            with mock.patch.object(
+                wrangler.helper, "get_purpose_uuid", return_value="TESTING_PURPOSE_UUID"
+            ):
 
-        assert tube_request_body == output
+                tube_request_body = wrangle_tubes("DN123")
 
-        with raises(BarcodeNotFoundError):
-            wrangle_tubes("")
+                assert tube_request_body == output
+
+                with raises(BarcodeNotFoundError):
+                    wrangle_tubes("")
+
+
+def test_wrangle_control_tubes(app, client):
+    output = {
+        "data": {
+            "attributes": {
+                "tube_rack": {
+                    "barcode": "DN_control",
+                    "purpose_uuid": "TESTING_PURPOSE_UUID",
+                    "study_uuid": "TESTING_STUDY_UUID",
+                    "tubes": {
+                        "A01": {"barcode": "TB133", "content": {"supplier_name": "PHEC-nnnnnnn60"}},
+                        "A02": {
+                            "barcode": "TB134",
+                            "content": {
+                                "supplier_name": "Positive control",
+                                "control": True,
+                                "control_type": "Positive",
+                            },
+                        },
+                        "A03": {
+                            "barcode": "TB135",
+                            "content": {
+                                "supplier_name": "Negative control",
+                                "control": True,
+                                "control_type": "Negative",
+                            },
+                        },
+                        "A04": {
+                            "barcode": "TB136",
+                            "content": {
+                                "supplier_name": "Control",
+                                "control": True,
+                                "control_type": None,
+                            },
+                        },
+                    },
+                }
+            }
+        }
+    }
+    with app.app_context():
+        with mock.patch.object(
+            wrangler.helper, "get_study_uuid", return_value="TESTING_STUDY_UUID"
+        ):
+            with mock.patch.object(
+                wrangler.helper, "get_purpose_uuid", return_value="TESTING_PURPOSE_UUID"
+            ):
+                tube_request_body = wrangle_tubes("DN_control")
+
+                assert tube_request_body == output
+
+                with raises(BarcodeNotFoundError):
+                    wrangle_tubes("")
 
 
 def test_wrangle_tubes_size_48(app, client):
     with app.app_context():
-        tube_request_body = wrangle_tubes("DN_size48")
+        with mock.patch.object(
+            wrangler.helper, "get_study_uuid", return_value="TESTING_STUDY_UUID"
+        ):
+            with mock.patch.object(
+                wrangler.helper, "get_purpose_uuid", return_value="TESTING_PURPOSE_UUID"
+            ) as mocked:
 
-        assert tube_request_body["data"]["attributes"]["tube_rack"]["size"] == 48
+                tube_request_body = wrangle_tubes("DN_size48")
 
-        with raises(BarcodeNotFoundError):
-            wrangle_tubes("")
+                assert (
+                    tube_request_body["data"]["attributes"]["tube_rack"]["purpose_uuid"]
+                    == "TESTING_PURPOSE_UUID"
+                )
+
+                mocked.assert_called_once_with(PURPOSE_TR_STOCK_48)
+
+                with raises(BarcodeNotFoundError):
+                    wrangle_tubes("")
 
 
 def test_validate_tubes_different_barcodes():
@@ -157,3 +215,40 @@ def test_error_request_body():
         }
     }
     assert error_request_body(exception, tube_rack_barcode) == body
+
+
+def test_control_for_normal_sample():
+    supplier_sample_id = "A sample"
+    assert control_for(supplier_sample_id) == False
+    assert control_type_for(supplier_sample_id) == None
+
+
+def test_control_for_positive_control():
+    supplier_sample_id = "A sample with positive control and other stuff"
+    assert control_for(supplier_sample_id) == True
+    assert control_type_for(supplier_sample_id) == "Positive"
+
+
+def test_control_for_negative_control():
+    supplier_sample_id = "a negative control sample"
+    assert control_for(supplier_sample_id) == True
+    assert control_type_for(supplier_sample_id) == "Negative"
+
+
+def test_control_for_control():
+    supplier_sample_id = "A sample it has a control in it and other stuff"
+    assert control_for(supplier_sample_id) == True
+    assert control_type_for(supplier_sample_id) == None
+
+
+def test_set_add_control_sample_if_present():
+    record = {"content": {"supplier_name": "is a positive control"}}
+    add_control_sample_if_present(record)
+    assert record["content"]["control"] == True
+    assert record["content"]["control_type"] == "Positive"
+
+
+def test_not_set_control_sample_if_not_present():
+    record = {"content": {"supplier_name": "is a very positive sample"}}
+    add_control_sample_if_present(record)
+    assert not "control" in record["content"]

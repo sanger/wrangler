@@ -56,3 +56,7 @@ INSERT INTO `mlwarehouse_test`.`cgap_heron` VALUES (null,'DN_size48','FR05653699
 INSERT INTO `mlwarehouse_test`.`cgap_heron` VALUES (null,'DN_size48','FR05653785','PHEC-nnnnnn57','F6');
 INSERT INTO `mlwarehouse_test`.`cgap_heron` VALUES (null,'DN_size48','FR05653736','PHEC-nnnnnn58','F7');
 INSERT INTO `mlwarehouse_test`.`cgap_heron` VALUES (null,'DN_size48','FR05653732','PHEC-nnnnnn59','F8');
+INSERT INTO `mlwarehouse_test`.`cgap_heron` VALUES (null,'DN_control','TB133','PHEC-nnnnnnn60','A01');
+INSERT INTO `mlwarehouse_test`.`cgap_heron` VALUES (null,'DN_control','TB134','Positive control','A02');
+INSERT INTO `mlwarehouse_test`.`cgap_heron` VALUES (null,'DN_control','TB135','Negative control','A03');
+INSERT INTO `mlwarehouse_test`.`cgap_heron` VALUES (null,'DN_control','TB136','Control','A04');

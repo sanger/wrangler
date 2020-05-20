@@ -11,6 +11,9 @@ from wrangler.db import get_db
 from wrangler.exceptions import BarcodeNotFoundError, BarcodesMismatchError, TubesCountError
 
 STATUS_VALIDATION_FAILED = "validation_failed"
+PURPOSE_TR_STOCK_48 = "TR Stock 48"
+PURPOSE_TR_STOCK_96 = "TR Stock 96"
+HERON_STUDY_NAME = "Heron Study"
 
 
 def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict:
@@ -159,20 +162,23 @@ def wrangle_tubes(tube_rack_barcode: str) -> Dict:
         for tube_barcode, coordinate in tubes_and_coordinates["layout"].items():
             tubes[coordinate] = {
                 "barcode": tube_barcode,
-                "content": {
-                    "supplier_name": tube_sample_dict[tube_barcode],
-                    "control": control_for(tube_sample_dict[tube_barcode]),
-                    "control_type": control_type_for(tube_sample_dict[tube_barcode])
-                }
+                "content": {"supplier_name": tube_sample_dict[tube_barcode]},
             }
+            add_control_sample_if_present(tubes[coordinate])
 
         app.logger.debug(f"tubes: {tubes}")
 
         # set size based on the number of rows in the csv file
         size = 48 if cursor.rowcount == 48 else 96
+        purpose_name = PURPOSE_TR_STOCK_48 if size == 48 else PURPOSE_TR_STOCK_96
 
         tube_rack_response = {
-            "tube_rack": {"barcode": tube_rack_barcode, "size": size, "tubes": tubes}
+            "tube_rack": {
+                "barcode": tube_rack_barcode,
+                "study_uuid": get_study_uuid(HERON_STUDY_NAME),
+                "purpose_uuid": get_purpose_uuid(purpose_name),
+                "tubes": tubes,
+            }
         }
         body = {"data": {"attributes": tube_rack_response}}
         app.logger.debug(body)
@@ -240,7 +246,8 @@ def control_for(supplier_sample_id: str):
     Returns:
         Boolean -- If the supplier_sample id is a control it returns true, otherwise false
     """
-    return re.match("/control/i", supplier_sample_id)
+    return bool(re.match(".*control.*", supplier_sample_id, re.IGNORECASE))
+
 
 def control_type_for(supplier_sample_id: str):
     """Returns the type of control sample for a supplier sample id provided
@@ -250,11 +257,54 @@ def control_type_for(supplier_sample_id: str):
 
     Returns:
         String -- "Positive" if the supplier_sample id is a positive control, "Negative if is a negative control"
+        None if is not a control, or if is not positive or negative
     """
-    if re.match("positive", text, re.IGNORECASE):
-        return 'positive_control'
-    if re.match("negative", text, re.IGNORECASE):
-        return 'negative_control'
-    if re.match("control", text, re.IGNORECASE):
-        return 'control'
-    return "not_control"
+    if re.match(".*positive.*", supplier_sample_id, re.IGNORECASE):
+        return "Positive"
+    if re.match(".*negative.*", supplier_sample_id, re.IGNORECASE):
+        return "Negative"
+    return None
+
+
+def get_study_uuid(study_name: str):
+    """Returns the study uuid for the study name provided
+
+    Arguments:
+        study_name -- study name that we will search in Sequencescape for its uuid
+
+    Returns:
+        string -- uuid for the study
+    """
+    return "00000000-0000-0000-0000-00000001"
+
+
+def get_purpose_uuid(purpose_name: str):
+    """Returns the purpose uuid for the purpose name provided
+
+    Arguments:
+        purpose_name -- purpose name that we will search in Sequencescape for its uuid
+
+    Returns:
+        string -- uuid for the purpose
+    """
+    return "00000000-0000-0000-0000-00000002"
+
+
+def add_control_sample_if_present(record: Dict):
+    """Adds the information for the control to the sample record if the supplier sample id represents
+    a control sample.
+
+    Arguments: 
+        record -- Tube record that will be sent to Sequencescape, with the supplier sample id in it
+
+    Returns:
+        dict -- the record argument with the added information for the control if required
+    """
+    supplier_sample_id = record["content"]["supplier_name"]
+    assert supplier_sample_id
+    is_control = control_for(supplier_sample_id)
+    if is_control:
+        record["content"]["control"] = is_control
+        record["content"]["control_type"] = control_type_for(supplier_sample_id)
+
+    return record
