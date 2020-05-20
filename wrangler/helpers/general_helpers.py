@@ -17,7 +17,7 @@ SS_HEADERS = {
 
 
 def csv_file_exists(filename: str) -> bool:
-    """Check of the CSV file exists.
+    """Check if the CSV file exists.
 
     Arguments:
         filename {str} -- the name of the file to check (with extension)
