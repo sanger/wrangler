@@ -1,11 +1,12 @@
 import logging
+from http import HTTPStatus
 from typing import Dict, Tuple
 
 from flask import current_app as app
 
 from wrangler.constants import PLATE, TUBE_RACK
 from wrangler.db import get_db
-from wrangler.exceptions import BarcodeNotFoundError
+from wrangler.exceptions import BarcodeNotFoundError, CsvNotFoundError
 from wrangler.helpers.general_helpers import (
     csv_file_exists,
     determine_labware_type,
@@ -18,18 +19,16 @@ logger = logging.getLogger(__name__)
 
 
 def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
-    """The wrangler wrangles with the labware barcode provided. It looks for a CSV file with that
-    barcode and retrieves any data for that barcode in the MLWH table.
+    """Wrangles with the provided labware barcode.
 
-    If a CSV file exists and matches the data for a tube rack, a new tube rack request is sent to
-    Sequencescape. If the data does not match, a new tube rack status request is sent to
-    Sequencescape.
-
-    If there is no CSV file but the data looks like a tube rack (tube barcode is populated for all
-    records), a tube rack status request is sent to Sequencescape with the error(s).
-
-    If there is no CSV file but the data looks like a plate (tube barcode is null for all records),
-    a new plate request is sent to Sequencescape.
+    - It first retrieves data from the MLWH for the barcode. If there is data, it determines what
+    type of labware it is
+        - If the labware is a tube rack, it looks for the CSV file expected for that tube rack
+            - If the CSV file is present and valid, it creates and send a new tube rack request to
+            Sequencescape
+            - If the CSV is not present or fails validation, it raises an exception
+        - If the labware is a plate, it creates and sends a request to Sequencescape
+    - If there is no data in the MLWH, it raises an exception
 
     Arguments:
         labware_barcode {str} -- the labware to look for and wrangle with
@@ -38,11 +37,6 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
         Dict -- the body of the request to send to Sequencescape
     """
     logger.info(f"Wrangle with labware barcode: {labware_barcode}")
-
-    # find and parse CSV file if it exists
-    csv_exists = csv_file_exists(f"{labware_barcode}.csv")
-    if csv_exists:
-        tubes_and_coordinates = parse_tube_rack_csv(labware_barcode)
 
     # get data from the MLWH for the barcode
     cursor = get_db()
@@ -53,7 +47,7 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
 
     logger.debug(f"Number of records found: {cursor.rowcount}")
 
-    # if there is data in the MLWH, we need to determine what type of labware it is
+    # if there is data in the MLWH, determine what type of labware it is
     if cursor.rowcount > 0:
         results = list(cursor)
 
@@ -61,16 +55,21 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
 
         labware_type = determine_labware_type(results)
 
-        if csv_exists and labware_type == TUBE_RACK:
-            ss_request_body = wrangle_tube_rack(labware_barcode, tubes_and_coordinates, results)
-            return send_request_to_sequencescape(
-                app.config["SS_TUBE_RACK_ENDPOINT"], ss_request_body
-            )
+        if labware_type == TUBE_RACK:
+            if csv_file_exists(f"{labware_barcode}.csv"):
+                tubes_and_coordinates = parse_tube_rack_csv(labware_barcode)
+                ss_request_body = wrangle_tube_rack(labware_barcode, tubes_and_coordinates, results)
 
-        if not csv_exists and labware_type == PLATE:
+                return send_request_to_sequencescape(
+                    app.config["SS_TUBE_RACK_ENDPOINT"], ss_request_body
+                )
+            else:
+                raise CsvNotFoundError(labware_barcode)
+
+        if labware_type == PLATE:
             ss_request_body = create_plate_body(labware_barcode, results)
             return send_request_to_sequencescape(app.config["SS_PLATE_ENDPOINT"], ss_request_body)
 
-        raise Exception("something is very wrong")
+        return {}, HTTPStatus.INTERNAL_SERVER_ERROR
     else:
-        raise BarcodeNotFoundError("MLWH")
+        raise BarcodeNotFoundError
