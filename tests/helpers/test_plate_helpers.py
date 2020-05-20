@@ -9,8 +9,8 @@ from wrangler.helpers.plate_helpers import create_plate_body
 
 def test_create_plate_body(app_db_less, mocked_responses):
     samples = [
-        {"coordinate": "A01", "supplie_sample_id": "xyz123"},
-        {"coordinate": "A02", "supplie_sample_id": "xyz456"},
+        {"coordinate": "A01", "supplier_sample_id": "xyz123"},
+        {"coordinate": "A02", "supplier_sample_id": "xyz456"},
     ]
     wells_content = {
         "A01": {"supplier_name": "xyz123"},
