@@ -11,7 +11,7 @@ def create_plate_body(plate_barcode: str, mlwh_results: List[Dict[str, str]]) ->
     wells_content = {}
     for sample in mlwh_results:
         well = {
-            "supplier_name": sample["supplie_sample_id"],
+            "supplier_name": sample["supplier_sample_id"],
         }
         wells_content[sample["coordinate"]] = well
 
