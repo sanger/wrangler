@@ -40,21 +40,33 @@ defined in the `Pipfile`:
     * `FLASK_APP=wrangler`
     * `FLASK_ENV=development`
     * `SETTINGS_PATH=config/development.py`
-1. Run the SQL scripts `wrangler/sql/schema_dev.sql` and `wrangler/sql/schema_test.sql` to create
-the development and test databases and their tables.
-1. Enter the python virtual environment using `pipenv shell`
-1. Run the app using `flask run`
+1. To setup the database and table (schema defined in 'sql/schema.sql'):
+
+        flask init-db
+
+1. Enter the python virtual environment using:
+
+        pipenv shell
+
+1. Run the app using:
+
+        flask run
 
 __NB:__ When adding or changing environmental variables, remember to exit and re-enter the virtual
 environment.
 
 ## Testing
 
-Make sure to be in the virtual environment (`pipenv shell`) before running the tests:
+1. Verify the credentials for your database in the settings file 'config/test.py'
+1. Create the test database and table and insert test data (found in 'sql/test_data'):
 
-1. Update the credentials for your database in the file `config/test.py`
-1. Run the tests using `python -m pytest -vvsx` - flags are for verbose, exit early and capture
-output
+        SETTINGS_PATH=config/test.py flask init-db
+
+1. Run the tests using pytest (flags are for verbose, exit early and capture output):
+
+        python -m pytest -vvsx
+
+__NB__: Make sure to be in the virtual environment (`pipenv shell`) before running the tests:
 
 ## Type checking
 
