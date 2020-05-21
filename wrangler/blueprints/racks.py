@@ -31,7 +31,8 @@ def get_tubes_from_rack_barcode(tube_rack_barcode: str) -> Tuple[Dict[str, str],
         if not csv_file_exists(f"{tube_rack_barcode}.csv"):
             raise CsvNotFoundError(tube_rack_barcode)
 
-        return parse_tube_rack_csv(tube_rack_barcode), HTTPStatus.OK
+        _, tubes_layout = parse_tube_rack_csv(tube_rack_barcode)
+        return tubes_layout, HTTPStatus.OK
     except CsvNotFoundError as e:
         logger.exception(e)
 

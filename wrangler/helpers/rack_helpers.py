@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 
 from flask import current_app as app
 
-from wrangler.exceptions import BarcodesMismatchError, TubesCountError
+from wrangler.exceptions import BarcodesMismatchError, TubesCountError, UnexpectedRowCountError
 
 logger = logging.getLogger(__name__)
 
@@ -26,16 +26,24 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict[str, Any]:
         tube_rack_barcode {str} -- the barcode of the tube rack
 
     Returns:
-        Optional[Dict[str, str]] -- a dict containing the tube rack barcode and the layout with
-        tube barcodes to coordinates
+        Dict[str, str] -- a dict containing the tube rack barcode and the layout with tube barcodes
+        to coordinates/position
     """
     filename = f"{tube_rack_barcode}.csv"
     full_path_to_file = join(app.config["TUBE_RACK_DIR"], filename)
 
     with open(full_path_to_file) as tube_rack_file:
-        tube_rack_csv = csv.reader(tube_rack_file, delimiter=",")
+        csv_reader = csv.reader(tube_rack_file, delimiter=",")
+        csv_list = list(csv_reader)
+        csv_rows = len(csv_list)
+
+        logger.debug(f"{csv_rows} rows in {filename}")
+
+        if csv_rows not in (48, 96):
+            raise UnexpectedRowCountError(tube_rack_barcode)
+
         layout = {}
-        for row in tube_rack_csv:
+        for row in csv_list:
             tube_barcode = row[1].strip()
             if "NO READ" not in tube_barcode:
                 layout[tube_barcode] = row[0].strip()
@@ -44,21 +52,24 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict[str, Any]:
 
     tube_rack_dict = {"rack_barcode": tube_rack_barcode, "layout": layout}
 
-    return tube_rack_dict
+    return csv_rows, tube_rack_dict
 
 
-def validate_tubes(tube_rack_barcode: str, layout_dict: Dict, database_dict: Dict) -> bool:
+def validate_tubes(
+    tube_rack_barcode: str, layout_dict: Dict[str, Any], database_dict: Dict[str, str]
+) -> bool:
     """Validates that the number of tubes in the tube rack CSV file are the same as those in the
     MLWH.
 
     Arguments:
-        layout_dict {Dict} -- the dictionary of tube barcodes and coordinates from the tube rack CSV
-        database_dict {Dict} -- the dictionary of the database records for the tube rack from the
-                                MLWH
+        layout_dict {Dict[str, Any]} -- the dictionary of tube barcodes and coordinates from the
+        tube rack CSV
+        database_dict {Dict[str, str]} -- the dictionary of the database records for the tube rack
+        from the MLWH
 
     Raises:
-        TubesCountError: [description]
-        BarcodesMismatchError: [description]
+        TubesCountError: if the number of tubes do not match up
+        BarcodesMismatchError: if the tube barcodes do not match up
 
     Returns:
         [boolean] -- returns True if the validation succeeds
@@ -78,6 +89,7 @@ def validate_tubes(tube_rack_barcode: str, layout_dict: Dict, database_dict: Dic
 
 def wrangle_tube_rack(
     tube_rack_barcode: str,
+    tube_rack_size: int,
     tubes_and_coordinates: Dict[str, Any],
     mlwh_results: List[Dict[str, str]],
 ) -> Dict[str, Dict[str, Any]]:
@@ -98,21 +110,20 @@ def wrangle_tube_rack(
             }
         )
 
-    logger.debug(f"tubes: {tubes}")
+    logger.debug(f"Tubes: {tubes}")
 
-    # set size based on the number of rows in the CSV file
-    size = 48 if len(mlwh_results) == 48 else 96
-
-    return create_tube_rack_body(size, tube_rack_barcode, tubes)
+    return create_tube_rack_body(tube_rack_size, tube_rack_barcode, tubes)
 
 
 def create_tube_rack_body(
-    size: int, tube_rack_barcode: str, tubes: List[Dict[str, str]]
+    tube_rack_size: int, tube_rack_barcode: str, tubes: List[Dict[str, str]]
 ) -> Dict[str, Dict[str, Any]]:
-    tube_rack_response = {"tube_rack": {"barcode": tube_rack_barcode, "size": size, "tubes": tubes}}
+    tube_rack_response = {
+        "tube_rack": {"barcode": tube_rack_barcode, "size": tube_rack_size, "tubes": tubes}
+    }
 
     body = {"data": {"attributes": tube_rack_response}}
 
-    logger.debug(body)
+    logger.debug(f"Body to send to SS: {body}")
 
     return body

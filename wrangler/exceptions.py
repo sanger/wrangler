@@ -98,7 +98,7 @@ class CsvNotFoundError(Error):
         )
 
         if self.message:
-            return f"{default_message}: {self.message}"
+            return f"{default_message} - {self.message}"
         else:
             return default_message
 
@@ -118,11 +118,36 @@ class IndeterminableLabwareError(Error):
 
     def __str__(self):
         default_message = (
-            f"IndeterminableLabwareError: [{self.labware_barcode}] cannot determine the type of "
+            f"IndeterminableLabwareError: [{self.labware_barcode}] Cannot determine the type of "
             "labware from the records in the MLWH"
         )
 
         if self.message:
-            return f"{default_message}: {self.message}"
+            return f"{default_message} - {self.message}"
+        else:
+            return default_message
+
+
+class UnexpectedRowCountError(Error):
+    def __init__(self, labware_barcode: str, message: str = None):
+        """Raised when the CSV file has an unexpected number of rows.
+
+        Arguments:
+            labware_barcode {str} -- barcode of the labware
+
+        Keyword Arguments:
+            message {str} -- extra message to add to the exception (default: {None})
+        """
+        self.message = message
+        self.labware_barcode = labware_barcode
+
+    def __str__(self):
+        default_message = (
+            f"UnexpectedRowCountError: [{self.labware_barcode}] Unexpected number of rows in tube "
+            "rack CSV"
+        )
+
+        if self.message:
+            return f"{default_message} - {self.message}"
         else:
             return default_message

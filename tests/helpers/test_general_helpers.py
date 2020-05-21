@@ -77,7 +77,7 @@ def test_error_request_body():
 
 def test_csv_file_exists(app_db_less):
     with app_db_less.app_context():
-        assert csv_file_exists("DN123.csv") is True
+        assert csv_file_exists("DN_48_valid.csv") is True
         assert csv_file_exists("does not exist") is False
 
 

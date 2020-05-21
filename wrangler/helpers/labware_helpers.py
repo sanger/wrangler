@@ -36,8 +36,6 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
     Returns:
         Dict -- the body of the request to send to Sequencescape
     """
-    logger.info(f"Wrangle with labware barcode: {labware_barcode}")
-
     # get data from the MLWH for the barcode
     cursor = get_db()
     cursor.execute(
@@ -58,8 +56,10 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
 
         if labware_type == TUBE_RACK:
             if csv_file_exists(f"{labware_barcode}.csv"):
-                tubes_and_coordinates = parse_tube_rack_csv(labware_barcode)
-                ss_request_body = wrangle_tube_rack(labware_barcode, tubes_and_coordinates, results)
+                tube_rack_size, tubes_and_coordinates = parse_tube_rack_csv(labware_barcode)
+                ss_request_body = wrangle_tube_rack(
+                    labware_barcode, tube_rack_size, tubes_and_coordinates, results
+                )
 
                 return send_request_to_sequencescape(
                     app.config["SS_TUBE_RACK_ENDPOINT"], ss_request_body

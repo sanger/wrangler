@@ -9,6 +9,7 @@ from wrangler.exceptions import (
     BarcodesMismatchError,
     CsvNotFoundError,
     TubesCountError,
+    UnexpectedRowCountError,
 )
 from wrangler.helpers.general_helpers import handle_error
 from wrangler.helpers.labware_helpers import wrangle_labware
@@ -29,9 +30,11 @@ def wrangle(labware_barcode: str):
     Returns:
         Dict -- a dict with the results or description of the error with "error" as the key
     """
+    logger.info("-" * 80)
+    logger.info(f"Wrangle with labware barcode: {labware_barcode}")
     try:
         return wrangle_labware(labware_barcode)
-    except (TubesCountError, BarcodesMismatchError, CsvNotFoundError) as e:
+    except (TubesCountError, BarcodesMismatchError, CsvNotFoundError, UnexpectedRowCountError) as e:
         return handle_error(e, labware_barcode, app.config["SS_TUBE_RACK_STATUS_ENDPOINT"])
     except BarcodeNotFoundError as e:
         logger.exception(e)
@@ -42,6 +45,6 @@ def wrangle(labware_barcode: str):
     except Exception as e:
         logger.exception(e)
         return (
-            {"error": f"Server error: {type(e).__name__}"},
+            {"error": f"{type(e).__name__}"},
             HTTPStatus.INTERNAL_SERVER_ERROR,
         )
