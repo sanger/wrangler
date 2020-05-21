@@ -1,7 +1,7 @@
 import csv
 import logging
 from os.path import join
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from flask import current_app as app
 
@@ -10,7 +10,7 @@ from wrangler.exceptions import BarcodesMismatchError, TubesCountError, Unexpect
 logger = logging.getLogger(__name__)
 
 
-def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict[str, Any]:
+def parse_tube_rack_csv(tube_rack_barcode: str) -> Tuple[int, Dict[str, Any]]:
     """Parses a CSV file with the name matching the tube rack barcode passed in.
     ```
     {
@@ -26,8 +26,8 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Dict[str, Any]:
         tube_rack_barcode {str} -- the barcode of the tube rack
 
     Returns:
-        Dict[str, str] -- a dict containing the tube rack barcode and the layout with tube barcodes
-        to coordinates/position
+        Tuple[int, Dict[str, Any]] -- the number of rows in the CSV and a dict containing the tube
+        rack barcode along with a layout with tube barcodes to coordinates/position
     """
     filename = f"{tube_rack_barcode}.csv"
     full_path_to_file = join(app.config["TUBE_RACK_DIR"], filename)
