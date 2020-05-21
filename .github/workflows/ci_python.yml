@@ -41,6 +41,9 @@ jobs:
       - name: Run mypy
         run: |
           mypy .
+      - name: Create test database and table and insert test data
+        run: |
+          SETTINGS_PATH=config/test.py flask init-db
       - name: Test with pytest
         run: |
           python -m pytest -vvx
