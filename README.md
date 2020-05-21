@@ -1,6 +1,7 @@
 # Wrangler
 
 ![CI python](https://github.com/sanger/wrangler/workflows/CI%20python/badge.svg)
+![CI docker](https://github.com/sanger/wrangler/workflows/CI%20docker/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/gh/sanger/wrangler/branch/develop/graph/badge.svg)](https://codecov.io/gh/sanger/wrangler)
 
