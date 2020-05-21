@@ -1,4 +1,4 @@
-name: Docker CI
+name: CI docker
 
 on:
   push:
@@ -23,11 +23,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
+        run: >-
+          docker build .
+          --file Dockerfile
+          --tag docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
       - name: Run mypy against the image
-        run: docker run --network host docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/} mypy .
-      - name: Run tests against the image
-        run: docker run --network host docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/} python -m pytest
+        run: >-
+          docker run
+          --network host
+          docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
+          mypy .
       - name: Create test database and table and insert test data
         run: >-
           docker run
@@ -36,7 +41,19 @@ jobs:
           --env SETTINGS_PATH=config/test.py
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
           flask init-db
+      - name: Run tests against the image
+        run: >-
+          docker run
+          --network host
+          docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
+          python -m pytest
       - name: Login to regitry
-        run: docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
+        run: >-
+          docker login
+          -u ${{ github.actor }}
+          -p ${{ secrets.GITHUB_TOKEN }}
+          docker.pkg.github.com
       - name: Publish image with image tag being either develop/master/<tag_name>
-        run: docker push docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
+        run: >-
+          docker push
+          docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
