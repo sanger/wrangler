@@ -1,6 +1,9 @@
 name: CI python
 
-on: [push]
+on:
+  push:
+    paths-ignore:
+      - "README.md"
 
 jobs:
   build:

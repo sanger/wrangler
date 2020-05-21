@@ -5,6 +5,8 @@ on:
     branches:
       - develop
       - master
+    paths-ignore:
+      - "README.md"
 
 env:
   IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
