@@ -13,8 +13,8 @@ def test_create_plate_body(app_db_less, mocked_responses):
         {"coordinate": "A02", "supplier_sample_id": "xyz456"},
     ]
     wells_content = {
-        "A01": { "contents": { "name": "xyz123", "supplier_name": "xyz123"} },
-        "A02": { "contents": { "name": "xyz456", "supplier_name": "xyz456"} },
+        "A01": { "contents": { "supplier_name": "xyz123"} },
+        "A02": { "contents": { "supplier_name": "xyz456"} },
     }
     plate_barcode = "DN123"
     plate_purpose_uuid = "54321"

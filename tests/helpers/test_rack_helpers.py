@@ -85,8 +85,8 @@ def test_create_48_tube_rack_body(app_db_less, mocked_ss_calls_for_48_rack):
 def test_create_96_tube_rack_body(app_db_less, mocked_ss_calls_for_96_rack):
     with app_db_less.app_context():
         tubes = {
-            "A01": { "barcode": "TB123", "contents": { "name": "xyz123", "supplier_sample_id": "xyz123"} },
-            "A02": { "barcode": "TB456", "contents": { "name": "xyz456", "supplier_sample_id": "xyz456"} }
+            "A01": { "barcode": "TB123", "contents": { "name": "xyz123", "supplier_name": "xyz123"} },
+            "A02": { "barcode": "TB456", "contents": { "name": "xyz456", "supplier_name": "xyz456"} }
         }
         size = 96
         tube_rack_barcode = "DN123"

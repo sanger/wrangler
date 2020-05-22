@@ -2,7 +2,6 @@ import re
 
 def sample_contents_for(supplier_sample_id: str):
   return add_control_sample_if_present({
-    "name": supplier_sample_id,
     "supplier_name": supplier_sample_id
   })
 
