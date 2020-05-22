@@ -30,18 +30,7 @@ defined in the `Pipfile`:
 1. Create a `.env` file with the following contents (or use `.env.example` - rename to `.env`):
     * `FLASK_APP=wrangler`
     * `FLASK_ENV=development`
-    * `MLWH_DB_DBNAME=mlwarehouse_dev`
-    * `MLWH_DB_HOST=localhost`
-    * `MLWH_DB_PASSWORD`
-    * `MLWH_DB_PORT=3306`
-    * `MLWH_DB_TABLE=cgap_heron`
-    * `MLWH_DB_USER`
-    * `SS_API_KEY=123`
-    * `SS_HOST=localhost:3000`
-    * `SS_PROTOCOL=http`
-    * `SS_TUBE_RACK_ENDPOINT=api/v2/heron/tube_racks`
-    * `SS_TUBE_RACK_STATUS_ENDPOINT=api/v2/heron/tube_rack_statuses`
-    * `TUBE_RACK_DIR=<dir>`
+    * `SETTINGS_PATH=config/development.py`
 1. Run the SQL scripts `wrangler/sql/schema_dev.sql` and `wrangler/sql/schema_test.sql` to create
 the development and test databases and their tables.
 1. Enter the python virtual environment using `pipenv shell`

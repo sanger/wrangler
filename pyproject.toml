@@ -4,3 +4,4 @@ line-length = 100
 [tool.coverage.run]
 branch = true
 source = ['wrangler']
+omit = ['wrangler/config/*', '*__init__.py*']

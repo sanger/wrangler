@@ -1,5 +1,9 @@
-import mysql.connector
+import logging
+
+import mysql.connector  # type: ignore
 from flask import current_app, g
+
+logger = logging.getLogger(__name__)
 
 
 def init_app(app) -> None:
@@ -9,7 +13,7 @@ def init_app(app) -> None:
 def init_db() -> None:
     """Currently only being used when testing
     """
-    current_app.logger.debug("Initializing db...")
+    logger.debug("Initializing db...")
     db = get_db()
 
     with current_app.open_resource("sql/schema_test.sql") as f:
