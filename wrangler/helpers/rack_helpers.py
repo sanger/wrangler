@@ -1,11 +1,12 @@
 import csv
 import logging
 from os.path import join
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 from flask import current_app as app
 
 from wrangler.exceptions import BarcodesMismatchError, TubesCountError, UnexpectedRowCountError
+from wrangler.helpers.general_helpers import send_request_to_sequencescape
 
 logger = logging.getLogger(__name__)
 
@@ -89,10 +90,9 @@ def validate_tubes(
 
 def wrangle_tube_rack(
     tube_rack_barcode: str,
-    tube_rack_size: int,
     tubes_and_coordinates: Dict[str, Any],
     mlwh_results: List[Dict[str, str]],
-) -> Dict[str, Dict[str, Any]]:
+) -> List[Dict[str, str]]:
     # create a dict with tube barcode as key and supplier sample ID as value
     tube_sample_dict = {row["tube_barcode"]: row["supplier_sample_id"] for row in mlwh_results}
 
@@ -112,18 +112,32 @@ def wrangle_tube_rack(
 
     logger.debug(f"Tubes: {tubes}")
 
-    return create_tube_rack_body(tube_rack_size, tube_rack_barcode, tubes)
+    return tubes
 
 
 def create_tube_rack_body(
-    tube_rack_size: int, tube_rack_barcode: str, tubes: List[Dict[str, str]]
-) -> Dict[str, Dict[str, Any]]:
-    tube_rack_response = {
+    tube_rack_size: int,
+    tube_rack_barcode: str,
+    tubes: List[Dict[str, str]],
+    plate_purpose_uuid=None,
+    study_uuid=None,
+):
+    tube_rack_attributes = {
         "tube_rack": {"barcode": tube_rack_barcode, "size": tube_rack_size, "tubes": tubes}
     }
 
-    body = {"data": {"attributes": tube_rack_response}}
+    if plate_purpose_uuid is not None:
+        tube_rack_attributes["tube_rack"]["plate_purpose_uuid"] = plate_purpose_uuid
+
+    if study_uuid is not None:
+        tube_rack_attributes["tube_rack"]["study_uuid"] = study_uuid
+
+    body = {"data": {"attributes": tube_rack_attributes}}
 
     logger.debug(f"Body to send to SS: {body}")
 
     return body
+
+
+def create_tube_rack(tube_rack_body: Dict[str, Union[str, Dict]]):
+    return send_request_to_sequencescape(app.config["SS_TUBE_RACK_ENDPOINT"], tube_rack_body)

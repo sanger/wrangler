@@ -1,12 +1,13 @@
 import logging
+from enum import Enum
 from http import HTTPStatus
 from os.path import getsize, isfile, join
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 
 import requests
 from flask import current_app as app
 
-from wrangler.constants import PLATE, STATUS_VALIDATION_FAILED, TUBE_RACK
+from wrangler.constants import STATUS_VALIDATION_FAILED
 from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError
 
 logger = logging.getLogger(__name__)
@@ -146,7 +147,12 @@ def handle_error(
         )
 
 
-def determine_labware_type(labware_barcode: str, records: List[Dict[str, str]]) -> str:
+class LabwareType(Enum):
+    TUBE_RACK = 1
+    PLATE = 2
+
+
+def determine_labware_type(labware_barcode, records) -> LabwareType:
     """Determine the type of labware in the MLWH table by inspecting the records.
 
     - If all the records have a tube barcode, assume it is a tube rack
@@ -159,12 +165,12 @@ def determine_labware_type(labware_barcode: str, records: List[Dict[str, str]]) 
         IndeterminableLabwareError: when the labware type is not discernable
 
     Returns:
-        str -- labware type
+        LabwareType -- labware type
     """
     if all([record["tube_barcode"] for record in records]):
-        return TUBE_RACK
+        return LabwareType.TUBE_RACK
 
     if len(list(filter(lambda record: record["tube_barcode"] is not None, records))) == 0:
-        return PLATE
+        return LabwareType.PLATE
 
     raise IndeterminableLabwareError(labware_barcode)

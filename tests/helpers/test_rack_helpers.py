@@ -109,7 +109,27 @@ def test_create_tube_rack_body():
     ]
     size = 48
     tube_rack_barcode = "DN123"
-    tube_rack_response = {"tube_rack": {"barcode": tube_rack_barcode, "size": size, "tubes": tubes}}
-    body = {"data": {"attributes": tube_rack_response}}
+    plate_purpose_uuid = "71b2a2a3-4209-43c5-bb2a-e1e86636a0b3"
+    study_uuid = "92fd21c5-c3df-43e2-874e-0a6c81bb5cc7"
 
-    assert create_tube_rack_body(size, tube_rack_barcode, tubes) == body
+    tube_rack_attributes = {
+        "tube_rack": {
+            "barcode": tube_rack_barcode,
+            "size": size,
+            "tubes": tubes,
+            "plate_purpose_uuid": plate_purpose_uuid,
+            "study_uuid": study_uuid,
+        }
+    }
+    body = {"data": {"attributes": tube_rack_attributes}}
+
+    assert (
+        create_tube_rack_body(
+            size,
+            tube_rack_barcode,
+            tubes,
+            plate_purpose_uuid=plate_purpose_uuid,
+            study_uuid=study_uuid,
+        )
+        == body
+    )

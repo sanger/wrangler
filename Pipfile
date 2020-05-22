@@ -13,6 +13,7 @@ pytest = "*"
 black = "*"
 flake8-bugbear = "*"
 mypy = "*"
+pytest-mock = "*"
 
 [packages]
 flask = "~=1.1"
@@ -22,6 +23,7 @@ mysql-connector-python = "~=8.0"
 requests = "~=2.23"
 colorlog = "*"
 slackclient = "*"
+apscheduler = "*"
 
 [requires]
 python_version = "3.8"

@@ -24,6 +24,12 @@ def create_app(test_config_path: str = None):
 
     db.init_app(app)
 
+    if app.config.get("ENABLE_SCHEDULER", False):
+        from wrangler.jobs import init_scheduler, cgap_extraction
+
+        scheduler = init_scheduler(app)
+        scheduler.add_job(cgap_extraction.run, "interval", minutes=2)
+
     from wrangler.blueprints import racks
     from wrangler.blueprints import labware
 

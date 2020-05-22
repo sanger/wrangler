@@ -8,6 +8,8 @@ MLWH_DB_PASSWORD = ""
 # tube rack CSV details
 TUBE_RACK_DIR = "tests/files"
 
+ENABLE_SCHEDULER = True
+
 # logging config
 LOGGING["loggers"]["wrangler"]["level"] = "DEBUG"  # noqa: F405
 LOGGING["loggers"]["wrangler"]["handlers"] = ["colored_stream"]  # noqa: F405

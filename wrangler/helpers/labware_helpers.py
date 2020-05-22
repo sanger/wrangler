@@ -4,16 +4,22 @@ from typing import Dict, Tuple
 
 from flask import current_app as app
 
-from wrangler.constants import PLATE, TUBE_RACK
+from wrangler.constants import PLATE_PURPOSE_ENTITY, PLATE_PURPOSE_STOCK, STUDY_ENTITY, STUDY_HERON
 from wrangler.db import get_db
 from wrangler.exceptions import BarcodeNotFoundError, CsvNotFoundError
 from wrangler.helpers.general_helpers import (
     csv_file_exists,
     determine_labware_type,
-    send_request_to_sequencescape,
+    LabwareType,
+    get_entity_uuid,
 )
-from wrangler.helpers.plate_helpers import create_plate_body
-from wrangler.helpers.rack_helpers import parse_tube_rack_csv, wrangle_tube_rack
+from wrangler.helpers.plate_helpers import create_plate_body, create_plate
+from wrangler.helpers.rack_helpers import (
+    parse_tube_rack_csv,
+    wrangle_tube_rack,
+    create_tube_rack,
+    create_tube_rack_body,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,23 +60,25 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
         labware_type = determine_labware_type(labware_barcode, results)
         logger.info(f"Determined labware type: {labware_type}")
 
-        if labware_type == TUBE_RACK:
+        if labware_type == LabwareType.TUBE_RACK:
             if csv_file_exists(f"{labware_barcode}.csv"):
                 tube_rack_size, tubes_and_coordinates = parse_tube_rack_csv(labware_barcode)
-                ss_request_body = wrangle_tube_rack(
-                    labware_barcode, tube_rack_size, tubes_and_coordinates, results
-                )
+                tubes = wrangle_tube_rack(labware_barcode, tubes_and_coordinates, results)
 
-                return send_request_to_sequencescape(
-                    app.config["SS_TUBE_RACK_ENDPOINT"], ss_request_body
-                )
+                tube_rack_body = create_tube_rack_body(tube_rack_size, labware_barcode, tubes,)
+
+                return create_tube_rack(tube_rack_body)
             else:
                 raise CsvNotFoundError(labware_barcode)
 
-        if labware_type == PLATE:
-            ss_request_body = create_plate_body(labware_barcode, results)
-
-            return send_request_to_sequencescape(app.config["SS_PLATE_ENDPOINT"], ss_request_body)
+        if labware_type == LabwareType.PLATE:
+            plate_body = create_plate_body(
+                labware_barcode,
+                results,
+                plate_purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, PLATE_PURPOSE_STOCK),
+                study_uuid=get_entity_uuid(STUDY_ENTITY, STUDY_HERON),
+            )
+            return create_plate(plate_body)
 
         return {}, HTTPStatus.INTERNAL_SERVER_ERROR
     else:

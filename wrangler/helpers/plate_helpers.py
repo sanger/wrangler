@@ -1,13 +1,19 @@
 import logging
-from typing import Any, Dict, List
+from typing import Dict, List, Union
 
-from wrangler.constants import PLATE_PURPOSE_ENTITY, PLATE_PURPOSE_STOCK, STUDY_ENTITY, STUDY_HERON
-from wrangler.helpers.general_helpers import get_entity_uuid
+from flask import current_app as app
+
+from wrangler.helpers.general_helpers import send_request_to_sequencescape
 
 logger = logging.getLogger(__name__)
 
 
-def create_plate_body(plate_barcode: str, mlwh_results: List[Dict[str, str]]) -> Dict[str, Any]:
+def create_plate_body(
+    plate_barcode: str,
+    mlwh_results: List[Dict[str, str]],
+    plate_purpose_uuid=None,
+    study_uuid=None,
+) -> Dict[str, Union[str, Dict]]:
     wells_content = {}
     for sample in mlwh_results:
         well = {
@@ -17,9 +23,17 @@ def create_plate_body(plate_barcode: str, mlwh_results: List[Dict[str, str]]) ->
 
     body = {
         "barcode": plate_barcode,
-        "plate_purpose_uuid": get_entity_uuid(PLATE_PURPOSE_ENTITY, PLATE_PURPOSE_STOCK),
-        "study_uuid": get_entity_uuid(STUDY_ENTITY, STUDY_HERON),
         "wells_content": wells_content,
     }
 
+    if plate_purpose_uuid is not None:
+        body["plate_purpose_uuid"] = plate_purpose_uuid
+
+    if study_uuid is not None:
+        body["study_uuid"] = study_uuid
+
     return {"data": {"type": "plates", "attributes": body}}
+
+
+def create_plate(plate_body: Dict[str, Union[str, Dict]]):
+    return send_request_to_sequencescape(app.config["SS_TUBE_RACK_ENDPOINT"], plate_body)
