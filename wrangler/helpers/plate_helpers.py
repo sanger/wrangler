@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 def create_plate_body(plate_barcode: str, mlwh_results: List[Dict[str, str]]) -> Dict[str, Any]:
     wells_content = {}
     for sample in mlwh_results:
-        wells_content[sample["position"]] = sample_contents_for(sample["supplier_sample_id"])
+        wells_content[sample["position"]] = {
+            "contents": sample_contents_for(sample["supplier_sample_id"])
+        }
 
     body = {
         "barcode": plate_barcode,
