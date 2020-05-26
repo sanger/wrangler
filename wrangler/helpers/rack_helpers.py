@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Tuple
 from flask import current_app as app
 
 from wrangler.exceptions import BarcodesMismatchError, TubesCountError, UnexpectedRowCountError
+from wrangler.helpers.sample_helpers import sample_contents_for
 
 logger = logging.getLogger(__name__)
 
@@ -100,15 +101,12 @@ def wrangle_tube_rack(
     #   the parsed CSV file - if these are not the same, exit early
     validate_tubes(tube_rack_barcode, tubes_and_coordinates["layout"], tube_sample_dict)
 
-    tubes = []
+    tubes = {}
     for tube_barcode, coordinate in tubes_and_coordinates["layout"].items():
-        tubes.append(
-            {
-                "coordinate": coordinate,
-                "barcode": tube_barcode,
-                "supplier_sample_id": tube_sample_dict[tube_barcode],
-            }
-        )
+        tubes[coordinate] = {
+            "barcode": tube_barcode,
+            "contents": sample_contents_for(tube_sample_dict[tube_barcode]),
+        }
 
     logger.debug(f"Tubes: {tubes}")
 
