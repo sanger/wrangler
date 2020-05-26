@@ -119,8 +119,8 @@ def create_tube_rack_body(
     tube_rack_size: int,
     tube_rack_barcode: str,
     tubes: List[Dict[str, str]],
-    plate_purpose_uuid=None,
-    study_uuid=None,
+    plate_purpose_uuid: str = None,
+    study_uuid: str = None,
 ):
     tube_rack_attributes = {
         "tube_rack": {"barcode": tube_rack_barcode, "size": tube_rack_size, "tubes": tubes}

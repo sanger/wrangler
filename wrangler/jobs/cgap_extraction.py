@@ -52,18 +52,18 @@ def run():
     for successful, responses in groupby(ss_responses, lambda x: x.successful):
         labware_barcodes = [x.barcode for x in responses]
 
-        if successful is True:
+        if successful:
             update_wrangled_labware(labware_barcodes)
             app.logger.info(
                 f"The following labware were successfully created: {','.join(labware_barcodes)}"
             )
-        elif successful is False:
+        else:
             app.logger.error(
                 f"The following labware failed to be created: {','.join(labware_barcodes)}"
             )
 
 
-def get_unwrangled_labware():
+def get_unwrangled_labware() -> List[Dict[str, str]]:
     """
     Fetches a list of unwrangled labware from the mlwh.
     Returns:
