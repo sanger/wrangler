@@ -21,9 +21,9 @@ def test_create_plate_body(app_db_less, mocked_responses):
     study_uuid = "12345"
     body = {
         "barcode": plate_barcode,
-        "plate_purpose_uuid": plate_purpose_uuid,
+        "purpose_uuid": plate_purpose_uuid,
         "study_uuid": "12345",
-        "wells_content": wells_content,
+        "wells": wells_content,
     }
 
     with app_db_less.app_context():

@@ -17,9 +17,9 @@ def create_plate_body(plate_barcode: str, mlwh_results: List[Dict[str, str]]) ->
 
     body = {
         "barcode": plate_barcode,
-        "plate_purpose_uuid": get_entity_uuid(PLATE_PURPOSE_ENTITY, PLATE_PURPOSE_STOCK),
+        "purpose_uuid": get_entity_uuid(PLATE_PURPOSE_ENTITY, PLATE_PURPOSE_STOCK),
         "study_uuid": get_entity_uuid(STUDY_ENTITY, STUDY_HERON),
-        "wells_content": wells_content,
+        "wells": wells_content,
     }
 
     return {"data": {"type": "plates", "attributes": body}}

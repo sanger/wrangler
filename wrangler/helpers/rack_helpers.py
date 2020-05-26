@@ -7,6 +7,15 @@ from flask import current_app as app
 
 from wrangler.exceptions import BarcodesMismatchError, TubesCountError, UnexpectedRowCountError
 from wrangler.helpers.sample_helpers import sample_contents_for
+from wrangler.helpers.general_helpers import get_entity_uuid
+
+from wrangler.constants import (
+    PLATE_PURPOSE_ENTITY,
+    RACK_PURPOSE_48,
+    RACK_PURPOSE_96,
+    STUDY_ENTITY,
+    STUDY_HERON,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -116,8 +125,16 @@ def wrangle_tube_rack(
 def create_tube_rack_body(
     tube_rack_size: int, tube_rack_barcode: str, tubes: List[Dict[str, str]]
 ) -> Dict[str, Dict[str, Any]]:
+
+    purpose_name = RACK_PURPOSE_48 if tube_rack_size == 48 else RACK_PURPOSE_96
+
     tube_rack_response = {
-        "tube_rack": {"barcode": tube_rack_barcode, "size": tube_rack_size, "tubes": tubes}
+        "tube_rack": {
+            "barcode": tube_rack_barcode,
+            "purpose_uuid": get_entity_uuid(PLATE_PURPOSE_ENTITY, purpose_name),
+            "study_uuid": get_entity_uuid(STUDY_ENTITY, STUDY_HERON),
+            "tubes": tubes,
+        }
     }
 
     body = {"data": {"attributes": tube_rack_response}}
