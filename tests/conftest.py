@@ -49,7 +49,7 @@ def mocked_responses():
 
 
 @pytest.fixture
-def mocked_ss_calls_for_48_rack(app, mocked_responses):
+def mocked_ss_calls_for_96_rack(app, mocked_responses):
     mock_ss_path_with_uuid(
         app,
         mocked_responses,
@@ -59,7 +59,7 @@ def mocked_ss_calls_for_48_rack(app, mocked_responses):
     mock_ss_path_with_uuid(
         app,
         mocked_responses,
-        f"/api/v2/{PLATE_PURPOSE_ENTITY}?filter[name]={RACK_PURPOSE_48}",
-        "purpose_rack_48_uuid",
+        f"/api/v2/{PLATE_PURPOSE_ENTITY}?filter[name]={RACK_PURPOSE_96}",
+        "purpose_rack_96_uuid",
     )
     yield mocked_responses

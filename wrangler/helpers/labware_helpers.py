@@ -14,6 +14,7 @@ from wrangler.helpers.general_helpers import (
 )
 from wrangler.helpers.plate_helpers import create_plate_body
 from wrangler.helpers.rack_helpers import parse_tube_rack_csv, wrangle_tube_rack
+from wrangler.utils import pretty
 
 logger = logging.getLogger(__name__)
 
@@ -49,17 +50,16 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
     if cursor.rowcount > 0:
         results = list(cursor)
 
-        logger.debug(results)
+        pretty(logger, results)
 
         labware_type = determine_labware_type(labware_barcode, results)
         logger.info(f"Determined labware type: {labware_type}")
 
         if labware_type == TUBE_RACK:
             if csv_file_exists(f"{labware_barcode}.csv"):
-                tube_rack_size, tubes_and_coordinates = parse_tube_rack_csv(labware_barcode)
-                ss_request_body = wrangle_tube_rack(
-                    labware_barcode, tube_rack_size, tubes_and_coordinates, results
-                )
+                _, tubes_and_coordinates = parse_tube_rack_csv(labware_barcode)
+
+                ss_request_body = wrangle_tube_rack(labware_barcode, tubes_and_coordinates, results)
 
                 return send_request_to_sequencescape(
                     app.config["SS_TUBE_RACK_ENDPOINT"], ss_request_body

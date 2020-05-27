@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Tuple
 
 from flask import current_app as app
 
-from wrangler.exceptions import BarcodesMismatchError, TubesCountError, UnexpectedRowCountError
+from wrangler.exceptions import BarcodesMismatchError, TubesCountError
 from wrangler.helpers.sample_helpers import sample_contents_for
 from wrangler.helpers.general_helpers import get_entity_uuid
 
@@ -15,6 +15,7 @@ from wrangler.constants import (
     RACK_PURPOSE_96,
     STUDY_ENTITY,
     STUDY_HERON,
+    DEFAULT_TUBE_RACK_SIZE,
 )
 
 logger = logging.getLogger(__name__)
@@ -48,9 +49,6 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Tuple[int, Dict[str, Any]]:
         csv_rows = len(csv_list)
 
         logger.debug(f"{csv_rows} rows in {filename}")
-
-        if csv_rows not in (48, 96):
-            raise UnexpectedRowCountError(tube_rack_barcode)
 
         layout = {}
         for row in csv_list:
@@ -99,10 +97,20 @@ def validate_tubes(
 
 def wrangle_tube_rack(
     tube_rack_barcode: str,
-    tube_rack_size: int,
     tubes_and_coordinates: Dict[str, Any],
     mlwh_results: List[Dict[str, str]],
+    **kwargs,
 ) -> Dict[str, Dict[str, Any]]:
+    """Wrangle with the given tube rack barcode.
+
+    Arguments:
+        tube_rack_barcode {str} -- tube rack barcode to wrangle with
+        tubes_and_coordinates {Dict[str, Any]} -- tube barcodes with their coordinates
+        mlwh_results {List[Dict[str, str]]} -- results from the MLWH query for the rack barcode
+
+    Returns:
+        Dict[str, Dict[str, Any]] -- the tube rack body to send to SS
+    """
     # create a dict with tube barcode as key and supplier sample ID as value
     tube_sample_dict = {row["tube_barcode"]: row["supplier_sample_id"] for row in mlwh_results}
 
@@ -119,12 +127,27 @@ def wrangle_tube_rack(
 
     logger.debug(f"Tubes: {tubes}")
 
-    return create_tube_rack_body(tube_rack_size, tube_rack_barcode, tubes)
+    return create_tube_rack_body(tube_rack_barcode, tubes, **kwargs)
 
 
 def create_tube_rack_body(
-    tube_rack_size: int, tube_rack_barcode: str, tubes: Dict[Any, Dict[str, str]]
+    tube_rack_barcode: str,
+    tubes: List[Dict[str, str]],
+    tube_rack_size: int = DEFAULT_TUBE_RACK_SIZE,
 ) -> Dict[str, Dict[str, Any]]:
+    """Creates the tube rack body which is sent to SS.
+
+    Arguments:
+        tube_rack_barcode {str} -- tube rack barcode to include in body
+        tubes {List[Dict[str, str]]} -- list of tubes with their info
+
+    Keyword Arguments:
+        tube_rack_size {int} -- the size of the tube rack to create in SS (default:
+        {DEFAULT_TUBE_RACK_SIZE})
+
+    Returns:
+        Dict[str, Dict[str, Any]] -- body to include in request to SS
+    """
     purpose_name = RACK_PURPOSE_48 if tube_rack_size == 48 else RACK_PURPOSE_96
 
     tube_rack_response = {
