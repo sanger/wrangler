@@ -123,7 +123,7 @@ def wrangle_tube_rack(
 
 
 def create_tube_rack_body(
-    tube_rack_size: int, tube_rack_barcode: str, tubes: List[Dict[str, str]]
+    tube_rack_size: int, tube_rack_barcode: str, tubes: Dict[Any, Dict[str, str]]
 ) -> Dict[str, Dict[str, Any]]:
     purpose_name = RACK_PURPOSE_48 if tube_rack_size == 48 else RACK_PURPOSE_96
 
