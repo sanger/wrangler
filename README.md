@@ -65,7 +65,7 @@ environment.
 
 1. Run the tests using pytest (flags are for verbose, exit early and capture output):
 
-        python -m pytest -vvsx
+        python -m pytest -vsx
 
 __NB__: Make sure to be in the virtual environment (`pipenv shell`) before running the tests:
 

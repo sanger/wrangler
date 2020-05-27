@@ -1,5 +1,6 @@
 from pytest import raises
 
+from wrangler.constants import DEFAULT_TUBE_RACK_SIZE
 from wrangler.exceptions import BarcodesMismatchError, TubesCountError
 from wrangler.helpers.rack_helpers import create_tube_rack_body, parse_tube_rack_csv, validate_tubes
 
@@ -102,7 +103,7 @@ def test_parse_tube_rack_csv_ignores_no_read(app_db_less, client, tmpdir):
         assert tube_dict == expected_output
 
 
-def test_create_tube_rack_body():
+def test_create_tube_rack_body_with_size():
     tubes = [
         {"coordinate": "A01", "barcode": "TB123", "supplier_sample_id": "xyz123"},
         {"coordinate": "A02", "barcode": "TB456", "supplier_sample_id": "xyz456"},
@@ -112,4 +113,18 @@ def test_create_tube_rack_body():
     tube_rack_response = {"tube_rack": {"barcode": tube_rack_barcode, "size": size, "tubes": tubes}}
     body = {"data": {"attributes": tube_rack_response}}
 
-    assert create_tube_rack_body(size, tube_rack_barcode, tubes) == body
+    assert create_tube_rack_body(tube_rack_barcode, tubes, size) == body
+
+
+def test_create_tube_rack_body_without_size():
+    tubes = [
+        {"coordinate": "A01", "barcode": "TB123", "supplier_sample_id": "xyz123"},
+        {"coordinate": "A02", "barcode": "TB456", "supplier_sample_id": "xyz456"},
+    ]
+    tube_rack_barcode = "DN123"
+    tube_rack_response = {
+        "tube_rack": {"barcode": tube_rack_barcode, "size": DEFAULT_TUBE_RACK_SIZE, "tubes": tubes}
+    }
+    body = {"data": {"attributes": tube_rack_response}}
+
+    assert create_tube_rack_body(tube_rack_barcode, tubes) == body
