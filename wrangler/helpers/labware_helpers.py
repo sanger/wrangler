@@ -57,10 +57,9 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
 
         if labware_type == TUBE_RACK:
             if csv_file_exists(f"{labware_barcode}.csv"):
-                tube_rack_size, tubes_and_coordinates = parse_tube_rack_csv(labware_barcode)
-                ss_request_body = wrangle_tube_rack(
-                    labware_barcode, tube_rack_size, tubes_and_coordinates, results
-                )
+                _, tubes_and_coordinates = parse_tube_rack_csv(labware_barcode)
+
+                ss_request_body = wrangle_tube_rack(labware_barcode, tubes_and_coordinates, results)
 
                 return send_request_to_sequencescape(
                     app.config["SS_TUBE_RACK_ENDPOINT"], ss_request_body
