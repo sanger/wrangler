@@ -132,14 +132,14 @@ def wrangle_tube_rack(
 
 def create_tube_rack_body(
     tube_rack_barcode: str,
-    tubes: List[Dict[str, str]],
+    tubes: Dict[Any, Dict[str, Any]],
     tube_rack_size: int = DEFAULT_TUBE_RACK_SIZE,
 ) -> Dict[str, Dict[str, Any]]:
     """Creates the tube rack body which is sent to SS.
 
     Arguments:
         tube_rack_barcode {str} -- tube rack barcode to include in body
-        tubes {List[Dict[str, str]]} -- list of tubes with their info
+        tubes {Dict[Any, Dict[str, Any]]} -- list of tubes with their info
 
     Keyword Arguments:
         tube_rack_size {int} -- the size of the tube rack to create in SS (default:
