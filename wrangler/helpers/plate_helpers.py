@@ -12,7 +12,7 @@ def create_plate_body(plate_barcode: str, mlwh_results: List[Dict[str, str]]) ->
     wells_content = {}
     for sample in mlwh_results:
         wells_content[sample["position"]] = {
-            "contents": sample_contents_for(sample["supplier_sample_id"])
+            "content": sample_contents_for(sample["supplier_sample_id"])
         }
 
     body = {

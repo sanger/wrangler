@@ -126,17 +126,3 @@ def test_size48_wrangle(app, client, mocked_ss_calls_for_48_rack):
         response = client.post(f"{WRANGLE_URL}/{SIZE48_BARCODE}")
         assert response.status_code == HTTPStatus.CREATED
         assert response.get_json() == {}
-
-
-def test_control_wrangle(app, client, mocked_ss_calls_for_48_rack):
-    with app.app_context():
-        ss_url = (
-            f'http://{current_app.config["SS_HOST"]}'
-            f'{current_app.config["SS_TUBE_RACK_ENDPOINT"]}'
-        )
-        mocked_ss_calls_for_48_rack.add(
-            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED
-        )
-        response = client.post(f"{WRANGLE_URL}/{SIZE48_BARCODE}")
-        assert response.status_code == HTTPStatus.CREATED
-        assert response.get_json() == {}

@@ -114,7 +114,7 @@ def wrangle_tube_rack(
     for tube_barcode, coordinate in tubes_and_coordinates["layout"].items():
         tubes[coordinate] = {
             "barcode": tube_barcode,
-            "contents": sample_contents_for(tube_sample_dict[tube_barcode]),
+            "content": sample_contents_for(tube_sample_dict[tube_barcode]),
         }
 
     logger.debug(f"Tubes: {tubes}")
@@ -128,12 +128,10 @@ def create_tube_rack_body(
     purpose_name = RACK_PURPOSE_48 if tube_rack_size == 48 else RACK_PURPOSE_96
 
     tube_rack_response = {
-        "tube_rack": {
-            "barcode": tube_rack_barcode,
-            "purpose_uuid": get_entity_uuid(PLATE_PURPOSE_ENTITY, purpose_name),
-            "study_uuid": get_entity_uuid(STUDY_ENTITY, STUDY_HERON),
-            "tubes": tubes,
-        }
+        "barcode": tube_rack_barcode,
+        "purpose_uuid": get_entity_uuid(PLATE_PURPOSE_ENTITY, purpose_name),
+        "study_uuid": get_entity_uuid(STUDY_ENTITY, STUDY_HERON),
+        "tubes": tubes,
     }
 
     body = {"data": {"attributes": tube_rack_response}}

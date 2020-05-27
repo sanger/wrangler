@@ -105,18 +105,16 @@ def test_parse_tube_rack_csv_ignores_no_read(app_db_less, client, tmpdir):
 
 def test_create_tube_rack_body():
     tubes_response = {
-        "A01": {"barcode": "TB123", "contents": {"supplier_name": "xyz123"}},
-        "A02": {"barcode": "TB456", "contents": {"supplier_name": "xyz456"}},
+        "A01": {"barcode": "TB123", "content": {"supplier_name": "xyz123"}},
+        "A02": {"barcode": "TB456", "content": {"supplier_name": "xyz456"}},
     }
     size = 48
     tube_rack_barcode = "DN123"
     tube_rack_response = {
-        "tube_rack": {
-            "barcode": tube_rack_barcode,
-            "purpose_uuid": "1234",
-            "study_uuid": "1234",
-            "tubes": tubes_response,
-        }
+        "barcode": tube_rack_barcode,
+        "purpose_uuid": "1234",
+        "study_uuid": "1234",
+        "tubes": tubes_response,
     }
     body = {"data": {"attributes": tube_rack_response}}
 

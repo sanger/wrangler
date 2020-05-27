@@ -2,7 +2,7 @@ import re
 
 
 def position_contents_for(supplier_sample_id: str):
-    return {"contents": sample_contents_for(supplier_sample_id)}
+    return {"content": sample_contents_for(supplier_sample_id)}
 
 
 def sample_contents_for(supplier_sample_id: str):
@@ -52,7 +52,7 @@ def control_type_for(supplier_sample_id: str):
         None if is not a control, or if is not positive or negative
     """
     if re.match(".*positive.*", supplier_sample_id, re.IGNORECASE):
-        return "Positive"
+        return "positive"
     if re.match(".*negative.*", supplier_sample_id, re.IGNORECASE):
-        return "Negative"
+        return "negative"
     return None
