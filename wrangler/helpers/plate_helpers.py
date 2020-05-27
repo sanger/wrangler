@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 def create_plate_body(
     plate_barcode: str,
     mlwh_results: List[Dict[str, str]],
-    plate_purpose_uuid: str = None,
-    study_uuid: str = None,
+    plate_purpose_uuid: str,
+    study_uuid: str,
 ) -> Dict[str, Union[str, Dict]]:
     wells_content = {}
     for sample in mlwh_results:
@@ -24,13 +24,9 @@ def create_plate_body(
     body = {
         "barcode": plate_barcode,
         "wells_content": wells_content,
+        "plate_purpose_uuid": plate_purpose_uuid,
+        "study_uuid": study_uuid,
     }
-
-    if plate_purpose_uuid is not None:
-        body["plate_purpose_uuid"] = plate_purpose_uuid
-
-    if study_uuid is not None:
-        body["study_uuid"] = study_uuid
 
     return {"data": {"type": "plates", "attributes": body}}
 

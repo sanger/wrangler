@@ -23,23 +23,3 @@ def test_create_plate_body():
     assert create_plate_body(
         plate_barcode, samples, plate_purpose_uuid=plate_purpose_uuid, study_uuid=study_uuid
     ) == {"data": {"type": "plates", "attributes": body}}
-
-
-def test_create_plate_body_without_purpose_or_study():
-    samples = [
-        {"position": "A01", "supplier_sample_id": "xyz123"},
-        {"position": "A02", "supplier_sample_id": "xyz456"},
-    ]
-    wells_content = {
-        "A01": {"supplier_name": "xyz123"},
-        "A02": {"supplier_name": "xyz456"},
-    }
-    plate_barcode = "DN123"
-    body = {
-        "barcode": plate_barcode,
-        "wells_content": wells_content,
-    }
-
-    assert create_plate_body(plate_barcode, samples) == {
-        "data": {"type": "plates", "attributes": body}
-    }

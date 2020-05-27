@@ -119,19 +119,18 @@ def create_tube_rack_body(
     tube_rack_size: int,
     tube_rack_barcode: str,
     tubes: List[Dict[str, str]],
-    plate_purpose_uuid: str = None,
-    study_uuid: str = None,
+    plate_purpose_uuid: str,
+    study_uuid: str,
 ):
     tube_rack_attributes = {
-        "tube_rack": {"barcode": tube_rack_barcode, "size": tube_rack_size, "tubes": tubes}
+        "tube_rack": {
+            "barcode": tube_rack_barcode,
+            "size": tube_rack_size,
+            "tubes": tubes,
+            "plate_purpose_uuid": plate_purpose_uuid,
+            "study_uuid": study_uuid,
+        }
     }
-
-    if plate_purpose_uuid is not None:
-        tube_rack_attributes["tube_rack"]["plate_purpose_uuid"] = plate_purpose_uuid
-
-    if study_uuid is not None:
-        tube_rack_attributes["tube_rack"]["study_uuid"] = study_uuid
-
     body = {"data": {"attributes": tube_rack_attributes}}
 
     logger.debug(f"Body to send to SS: {body}")

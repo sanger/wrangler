@@ -7,9 +7,9 @@ from flask import current_app as app
 
 from wrangler.constants import (
     PLATE_PURPOSE_ENTITY,
-    TUBE_RACK_PLATE_PURPOSE,
+    HERON_TR_PURPOSE,
     STUDY_ENTITY,
-    PLATE_PLATE_PURPOSE,
+    HERON_PLATE_PURPOSE,
 )
 from wrangler.db import get_db
 from wrangler.helpers.general_helpers import determine_labware_type, get_entity_uuid, LabwareType
@@ -93,11 +93,11 @@ def get_study_uuids(studies: Iterable[str]) -> Dict[str, str]:
 
 
 def get_plate_plate_purpose_uuid() -> str:
-    return get_entity_uuid(PLATE_PURPOSE_ENTITY, PLATE_PLATE_PURPOSE)
+    return get_entity_uuid(PLATE_PURPOSE_ENTITY, HERON_PLATE_PURPOSE)
 
 
 def get_tube_rack_plate_purpose_uuid() -> str:
-    return get_entity_uuid(PLATE_PURPOSE_ENTITY, TUBE_RACK_PLATE_PURPOSE)
+    return get_entity_uuid(PLATE_PURPOSE_ENTITY, HERON_TR_PURPOSE)
 
 
 def create_labwares(mlwh_rows, **kwargs) -> Generator:

@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from urllib.parse import urlencode
 
 import responses
 from flask import current_app
@@ -44,6 +45,17 @@ def test_valid_barcode_wrangle(app, client, mocked_responses):
         ss_url = (
             f'http://{current_app.config["SS_HOST"]}'
             f'{current_app.config["SS_TUBE_RACK_ENDPOINT"]}'
+        )
+
+        purpose_url = f"http://{current_app.config['SS_HOST']}/api/v2/purposes?{urlencode({'filter[name]': 'TR Stock 96'})}"
+        study_url = f"http://{current_app.config['SS_HOST']}/api/v2/studies?{urlencode({'filter[name]': 'heron'})}"
+
+        # Entity Lookups
+        mocked_responses.add(
+            responses.GET, purpose_url, json={"data": [{"attributes": {"uuid": "1111"}}]}
+        )
+        mocked_responses.add(
+            responses.GET, study_url, json={"data": [{"attributes": {"uuid": "2222"}}]}
         )
 
         mocked_responses.add(responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED)

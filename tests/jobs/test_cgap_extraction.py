@@ -6,8 +6,8 @@ import wrangler.jobs.cgap_extraction as cgap_extraction
 from wrangler.constants import (
     STUDY_ENTITY,
     PLATE_PURPOSE_ENTITY,
-    PLATE_PLATE_PURPOSE,
-    TUBE_RACK_PLATE_PURPOSE,
+    HERON_PLATE_PURPOSE,
+    HERON_TR_PURPOSE,
 )
 from wrangler.db import get_db
 
@@ -54,7 +54,7 @@ def test_get_plate_plate_purpose_uuid(app, mocker):
         result = cgap_extraction.get_plate_plate_purpose_uuid()
 
         assert (
-            call(PLATE_PURPOSE_ENTITY, PLATE_PLATE_PURPOSE)
+            call(PLATE_PURPOSE_ENTITY, HERON_PLATE_PURPOSE)
             == cgap_extraction.get_entity_uuid.call_args
         )
         assert result == "5555-5555-5555-5555"
@@ -68,7 +68,7 @@ def test_get_tube_rack_plate_purpose_uuids(app, mocker):
         result = cgap_extraction.get_tube_rack_plate_purpose_uuid()
 
         assert (
-            call(PLATE_PURPOSE_ENTITY, TUBE_RACK_PLATE_PURPOSE)
+            call(PLATE_PURPOSE_ENTITY, HERON_TR_PURPOSE)
             == cgap_extraction.get_entity_uuid.call_args
         )
         assert result == "8888-8888-8888-8888"
