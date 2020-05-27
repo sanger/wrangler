@@ -18,6 +18,7 @@ VALID_BARCODE = "DN123"
 INVALID_BARCODE = "DN_invalid"
 LESS_TUBES_BARCODE = "DN_lesstubes"
 DIFF_TUBES_BARCODE = "DN_difftubes"
+SIZE48_BARCODE = "DN_48_valid"
 
 
 def mock_ss_path_with_uuid(app, mocked_responses, path, uuid):
@@ -111,3 +112,31 @@ def test_indeterminable_wrangle(app, client):
         response = client.post(f"{WRANGLE_URL}/DN_48_indeterminable")
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert "IndeterminableLabwareError" in response.get_json()["error"]
+
+
+def test_size48_wrangle(app, client, mocked_ss_calls_for_48_rack):
+    with app.app_context():
+        ss_url = (
+            f'http://{current_app.config["SS_HOST"]}'
+            f'{current_app.config["SS_TUBE_RACK_ENDPOINT"]}'
+        )
+        mocked_ss_calls_for_48_rack.add(
+            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED
+        )
+        response = client.post(f"{WRANGLE_URL}/{SIZE48_BARCODE}")
+        assert response.status_code == HTTPStatus.CREATED
+        assert response.get_json() == {}
+
+
+def test_control_wrangle(app, client, mocked_ss_calls_for_48_rack):
+    with app.app_context():
+        ss_url = (
+            f'http://{current_app.config["SS_HOST"]}'
+            f'{current_app.config["SS_TUBE_RACK_ENDPOINT"]}'
+        )
+        mocked_ss_calls_for_48_rack.add(
+            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED
+        )
+        response = client.post(f"{WRANGLE_URL}/{SIZE48_BARCODE}")
+        assert response.status_code == HTTPStatus.CREATED
+        assert response.get_json() == {}
