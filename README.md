@@ -41,6 +41,7 @@ defined in the `Pipfile`:
     * `FLASK_APP=wrangler`
     * `FLASK_ENV=development`
     * `SETTINGS_PATH=config/development.py`
+
 1. To setup the database and table (schema defined in 'sql/schema.sql'):
 
         flask init-db
