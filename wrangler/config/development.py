@@ -3,7 +3,6 @@ from wrangler.config.defaults import *  # noqa: F403,F401
 # settings here overwrite those in 'defaults.py'
 # MLWH details
 MLWH_DB_HOST = "127.0.0.1"
-MLWH_DB_PASSWORD = ""
 
 # tube rack CSV details
 TUBE_RACK_DIR = "tests/files"

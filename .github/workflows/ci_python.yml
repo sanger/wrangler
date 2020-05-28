@@ -52,6 +52,6 @@ jobs:
           flask init-db
       - name: Test with pytest
         run: |
-          python -m pytest -vvx
+          python -m pytest -vsx
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1

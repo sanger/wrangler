@@ -13,17 +13,17 @@ def test_create_plate_body(app_db_less, mocked_responses):
         {"position": "A02", "supplier_sample_id": "xyz456"},
     ]
     wells_content = {
-        "A01": {"supplier_name": "xyz123"},
-        "A02": {"supplier_name": "xyz456"},
+        "A01": {"content": {"supplier_name": "xyz123"}},
+        "A02": {"content": {"supplier_name": "xyz456"}},
     }
     plate_barcode = "DN123"
     plate_purpose_uuid = "54321"
     study_uuid = "12345"
     body = {
         "barcode": plate_barcode,
-        "plate_purpose_uuid": plate_purpose_uuid,
+        "purpose_uuid": plate_purpose_uuid,
         "study_uuid": "12345",
-        "wells_content": wells_content,
+        "wells": wells_content,
     }
 
     with app_db_less.app_context():

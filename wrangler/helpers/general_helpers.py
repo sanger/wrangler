@@ -8,6 +8,7 @@ from flask import current_app as app
 
 from wrangler.constants import PLATE, STATUS_VALIDATION_FAILED, TUBE_RACK
 from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError
+from wrangler.utils import pretty
 
 logger = logging.getLogger(__name__)
 
@@ -62,9 +63,13 @@ def send_request_to_sequencescape(
         headers={**SS_HEADERS, "X-Sequencescape-Client-Id": app.config["SS_API_KEY"]},
     )
 
-    logger.debug(f"Response code from SS: {response.status_code}")
+    status_code = response.status_code
+    response_json = response.json()
 
-    return response.json(), response.status_code
+    logger.info(f"Response code from SS: {status_code}")
+    pretty(logger, response_json)
+
+    return response_json, status_code
 
 
 def get_entity_uuid(entity: str, entity_name: str) -> str:
@@ -87,9 +92,11 @@ def get_entity_uuid(entity: str, entity_name: str) -> str:
         url, headers={**SS_HEADERS, "X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
     )
 
-    logger.debug(response.json())
+    response_json = response.json()
 
-    return response.json()["data"][0]["attributes"]["uuid"]
+    pretty(logger, response_json)
+
+    return response_json["data"][0]["attributes"]["uuid"]
 
 
 def error_request_body(exception: Exception, tube_rack_barcode: str) -> Dict:

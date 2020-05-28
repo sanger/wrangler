@@ -1,7 +1,7 @@
-INSERT INTO `{{ database }}`.`cgap_heron` VALUES (null,'DN_48_valid','FR05653780','PHEC-5653780','A1');
-INSERT INTO `{{ database }}`.`cgap_heron` VALUES (null,'DN_48_valid','FR05653808','PHEC-5653808','A2');
-INSERT INTO `{{ database }}`.`cgap_heron` VALUES (null,'DN_48_valid','FR05653791','PHEC-5653791','A3');
-INSERT INTO `{{ database }}`.`cgap_heron` VALUES (null,'DN_48_valid','FR05653668','PHEC-5653668','A4');
+INSERT INTO `{{ database }}`.`cgap_heron` VALUES (null,'DN_48_valid','FR05653780','PHEC-nnnnnnn60','A01');
+INSERT INTO `{{ database }}`.`cgap_heron` VALUES (null,'DN_48_valid','FR05653808','Positive control','A02');
+INSERT INTO `{{ database }}`.`cgap_heron` VALUES (null,'DN_48_valid','FR05653791','Negative control','A03');
+INSERT INTO `{{ database }}`.`cgap_heron` VALUES (null,'DN_48_valid','FR05653668','Control','A04');
 INSERT INTO `{{ database }}`.`cgap_heron` VALUES (null,'DN_48_valid','FR05653832','PHEC-5653832','A5');
 INSERT INTO `{{ database }}`.`cgap_heron` VALUES (null,'DN_48_valid','FR05653743','PHEC-5653743','A6');
 INSERT INTO `{{ database }}`.`cgap_heron` VALUES (null,'DN_48_valid','FR05653698','PHEC-5653698','A7');

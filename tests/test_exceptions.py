@@ -5,7 +5,6 @@ from wrangler.exceptions import (
     BarcodesMismatchError,
     CsvNotFoundError,
     TubesCountError,
-    UnexpectedRowCountError,
 )
 
 
@@ -27,8 +26,3 @@ def test_CsvNotFoundError():
 def test_TubesCountError():
     with pytest.raises(TubesCountError, match=r".*\[DN123\].*"):
         raise TubesCountError("DN123")
-
-
-def test_UnexpectedRowCountError():
-    with pytest.raises(UnexpectedRowCountError, match=r".*\[DN123\].*"):
-        raise UnexpectedRowCountError("DN123")

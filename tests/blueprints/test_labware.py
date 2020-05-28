@@ -8,6 +8,7 @@ VALID_BARCODE = "DN123"
 INVALID_BARCODE = "DN_invalid"
 LESS_TUBES_BARCODE = "DN_lesstubes"
 DIFF_TUBES_BARCODE = "DN_difftubes"
+SIZE48_BARCODE = "DN_48_valid"
 
 
 def test_fail_if_num_tubes_from_layout_and_mlwh_do_not_match(app, client, mocked_responses):
@@ -22,6 +23,7 @@ def test_fail_if_num_tubes_from_layout_and_mlwh_do_not_match(app, client, mocked
             f'{current_app.config["SS_TUBE_RACK_STATUS_ENDPOINT"]}'
         )
         mocked_responses.add(responses.POST, ss_url, body="{}", status=HTTPStatus.OK)
+
         response = client.post(f"{WRANGLE_URL}/DN_48_less_tubes")
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert "TubesCountError" in response.get_json()["error"]
@@ -39,15 +41,19 @@ def test_fail_if_any_tube_barcode_different_between_layout_and_mlwh(app, client,
         assert "BarcodesMismatchError" in response.get_json()["error"]
 
 
-def test_valid_barcode_wrangle(app, client, mocked_responses):
+def test_valid_barcode_wrangle(app, client, mocked_ss_calls_with_study_and_rack_96_purpose):
     with app.app_context():
         ss_url = (
             f'http://{current_app.config["SS_HOST"]}'
             f'{current_app.config["SS_TUBE_RACK_ENDPOINT"]}'
         )
 
-        mocked_responses.add(responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED)
-        mocked_responses.add(responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED)
+        mocked_ss_calls_with_study_and_rack_96_purpose.add(
+            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED
+        )
+        mocked_ss_calls_with_study_and_rack_96_purpose.add(
+            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED
+        )
 
         response = client.post(f"{WRANGLE_URL}/DN_48_valid")
 
@@ -71,3 +77,17 @@ def test_indeterminable_wrangle(app, client):
         response = client.post(f"{WRANGLE_URL}/DN_48_indeterminable")
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert "IndeterminableLabwareError" in response.get_json()["error"]
+
+
+def test_size48_wrangle(app, client, mocked_ss_calls_for_96_rack):
+    with app.app_context():
+        ss_url = (
+            f'http://{current_app.config["SS_HOST"]}'
+            f'{current_app.config["SS_TUBE_RACK_ENDPOINT"]}'
+        )
+        mocked_ss_calls_for_96_rack.add(
+            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED
+        )
+        response = client.post(f"{WRANGLE_URL}/{SIZE48_BARCODE}")
+        assert response.status_code == HTTPStatus.CREATED
+        assert response.get_json() == {}
