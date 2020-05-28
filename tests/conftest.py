@@ -63,3 +63,20 @@ def mocked_ss_calls_for_96_rack(app, mocked_responses):
         "purpose_rack_96_uuid",
     )
     yield mocked_responses
+
+
+@pytest.fixture
+def mocked_ss_calls_with_study_and_rack_96_purpose(app, mocked_responses):
+    mock_ss_path_with_uuid(
+        app,
+        mocked_responses,
+        f"/api/v2/{STUDY_ENTITY}?filter[name]={STUDY_HERON}",
+        "study_heron_uuid",
+    )
+    mock_ss_path_with_uuid(
+        app,
+        mocked_responses,
+        f"/api/v2/{PLATE_PURPOSE_ENTITY}?filter[name]={RACK_PURPOSE_96}",
+        "purpose_rack_96_uuid",
+    )
+    yield mocked_responses

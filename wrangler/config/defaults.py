@@ -3,7 +3,7 @@ from typing import Any, Dict
 # MLWH details
 MLWH_DB_DBNAME = "mlwarehouse_dev"
 MLWH_DB_HOST = "localhost"
-MLWH_DB_PASSWORD = ""
+MLWH_DB_PASSWORD = "root"
 MLWH_DB_PORT = "3306"
 MLWH_DB_TABLE = "cgap_heron"
 MLWH_DB_USER = "root"

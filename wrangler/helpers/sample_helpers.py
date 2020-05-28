@@ -1,11 +1,13 @@
 import re
 
+from typing import Dict, Any
+
 
 def sample_contents_for(supplier_sample_id: str):
     return add_control_sample_if_present({"supplier_name": supplier_sample_id})
 
 
-def add_control_sample_if_present(sample_record: dict):
+def add_control_sample_if_present(sample_record: Dict[str, Any]):
     """Adds the information for the control to the sample sample_record if the supplier sample id represents
     a control sample.
 
