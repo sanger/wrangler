@@ -9,6 +9,7 @@ def test_get_close_db(app):
         db = get_db()
 
         db_connection = get_db_connection()
+
         assert db is get_db()
 
     with pytest.raises(ProgrammingError):
