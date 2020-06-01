@@ -1,5 +1,7 @@
 from pytest import raises
+from unittest.mock import MagicMock, patch
 
+from wrangler.constants import DEFAULT_TUBE_RACK_SIZE
 from wrangler.exceptions import BarcodesMismatchError, TubesCountError
 from wrangler.helpers.rack_helpers import create_tube_rack_body, parse_tube_rack_csv, validate_tubes
 
@@ -101,35 +103,3 @@ def test_parse_tube_rack_csv_ignores_no_read(app_db_less, client, tmpdir):
         assert rack_size == 48
         assert tube_dict == expected_output
 
-
-def test_create_tube_rack_body():
-    tubes = [
-        {"coordinate": "A01", "barcode": "TB123", "supplier_sample_id": "xyz123"},
-        {"coordinate": "A02", "barcode": "TB456", "supplier_sample_id": "xyz456"},
-    ]
-    size = 48
-    tube_rack_barcode = "DN123"
-    plate_purpose_uuid = "71b2a2a3-4209-43c5-bb2a-e1e86636a0b3"
-    study_uuid = "92fd21c5-c3df-43e2-874e-0a6c81bb5cc7"
-
-    tube_rack_attributes = {
-        "tube_rack": {
-            "barcode": tube_rack_barcode,
-            "size": size,
-            "tubes": tubes,
-            "plate_purpose_uuid": plate_purpose_uuid,
-            "study_uuid": study_uuid,
-        }
-    }
-    body = {"data": {"attributes": tube_rack_attributes}}
-
-    assert (
-        create_tube_rack_body(
-            size,
-            tube_rack_barcode,
-            tubes,
-            plate_purpose_uuid=plate_purpose_uuid,
-            study_uuid=study_uuid,
-        )
-        == body
-    )

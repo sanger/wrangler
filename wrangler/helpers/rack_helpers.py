@@ -5,8 +5,9 @@ from typing import Any, Dict, List, Tuple, Union
 
 from flask import current_app as app
 
-from wrangler.exceptions import BarcodesMismatchError, TubesCountError, UnexpectedRowCountError
+from wrangler.exceptions import BarcodesMismatchError, TubesCountError
 from wrangler.helpers.general_helpers import send_request_to_sequencescape
+from wrangler.helpers.sample_helpers import sample_contents_for
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +40,6 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Tuple[int, Dict[str, Any]]:
         csv_rows = len(csv_list)
 
         logger.debug(f"{csv_rows} rows in {filename}")
-
-        if csv_rows not in (48, 96):
-            raise UnexpectedRowCountError(tube_rack_barcode)
 
         layout = {}
         for row in csv_list:
@@ -93,6 +91,16 @@ def wrangle_tube_rack(
     tubes_and_coordinates: Dict[str, Any],
     mlwh_results: List[Dict[str, str]],
 ) -> List[Dict[str, str]]:
+    """Wrangle with the given tube rack barcode.
+
+    Arguments:
+        tube_rack_barcode {str} -- tube rack barcode to wrangle with
+        tubes_and_coordinates {Dict[str, Any]} -- tube barcodes with their coordinates
+        mlwh_results {List[Dict[str, str]]} -- results from the MLWH query for the rack barcode
+
+    Returns:
+        Dict[str, Dict[str, Any]] -- the tube rack body to send to SS
+    """
     # create a dict with tube barcode as key and supplier sample ID as value
     tube_sample_dict = {row["tube_barcode"]: row["supplier_sample_id"] for row in mlwh_results}
 
@@ -100,15 +108,12 @@ def wrangle_tube_rack(
     #   the parsed CSV file - if these are not the same, exit early
     validate_tubes(tube_rack_barcode, tubes_and_coordinates["layout"], tube_sample_dict)
 
-    tubes = []
+    tubes = {}
     for tube_barcode, coordinate in tubes_and_coordinates["layout"].items():
-        tubes.append(
-            {
-                "coordinate": coordinate,
-                "barcode": tube_barcode,
-                "supplier_sample_id": tube_sample_dict[tube_barcode],
-            }
-        )
+        tubes[coordinate] = {
+            "barcode": tube_barcode,
+            "content": sample_contents_for(tube_sample_dict[tube_barcode]),
+        }
 
     logger.debug(f"Tubes: {tubes}")
 
@@ -116,7 +121,6 @@ def wrangle_tube_rack(
 
 
 def create_tube_rack_body(
-    tube_rack_size: int,
     tube_rack_barcode: str,
     tubes: List[Dict[str, str]],
     plate_purpose_uuid: str,
@@ -125,9 +129,8 @@ def create_tube_rack_body(
     tube_rack_attributes = {
         "tube_rack": {
             "barcode": tube_rack_barcode,
-            "size": tube_rack_size,
             "tubes": tubes,
-            "plate_purpose_uuid": plate_purpose_uuid,
+            "purpose_uuid": plate_purpose_uuid,
             "study_uuid": study_uuid,
         }
     }

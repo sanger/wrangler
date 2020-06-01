@@ -8,7 +8,7 @@ from wrangler.constants import (
     PLATE_PURPOSE_ENTITY,
     STOCK_PLATE_PURPOSE,
     STUDY_ENTITY,
-    STOCK_TR_PURPOSE,
+    STOCK_TR_PURPOSE_96,
 )
 from wrangler.db import get_db
 from wrangler.exceptions import BarcodeNotFoundError, CsvNotFoundError
@@ -18,13 +18,14 @@ from wrangler.helpers.general_helpers import (
     LabwareType,
     get_entity_uuid,
 )
-from wrangler.helpers.plate_helpers import create_plate_body, create_plate
+from wrangler.helpers.plate_helpers import create_plate
+from wrangler.helpers.plate_helpers import create_plate_body
 from wrangler.helpers.rack_helpers import (
-    parse_tube_rack_csv,
-    wrangle_tube_rack,
     create_tube_rack,
     create_tube_rack_body,
 )
+from wrangler.helpers.rack_helpers import parse_tube_rack_csv, wrangle_tube_rack
+from wrangler.utils import pretty
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
     if cursor.rowcount > 0:
         results = list(cursor)
 
-        logger.debug(results)
+        pretty(logger, results)
 
         labware_type = determine_labware_type(labware_barcode, results)
         logger.info(f"Determined labware type: {labware_type}")
@@ -75,10 +76,9 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
                 tubes = wrangle_tube_rack(labware_barcode, tubes_and_coordinates, results)
 
                 tube_rack_body = create_tube_rack_body(
-                    tube_rack_size,
                     labware_barcode,
                     tubes,
-                    plate_purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, STOCK_TR_PURPOSE),
+                    plate_purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, STOCK_TR_PURPOSE_96),
                     study_uuid=get_entity_uuid(STUDY_ENTITY, study_name),
                 )
 
@@ -90,7 +90,7 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
             plate_body = create_plate_body(
                 labware_barcode,
                 results,
-                plate_purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, STOCK_PLATE_PURPOSE),
+                purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, STOCK_PLATE_PURPOSE),
                 study_uuid=get_entity_uuid(STUDY_ENTITY, study_name),
             )
             return create_plate(plate_body)

@@ -9,6 +9,7 @@ VALID_BARCODE = "DN123"
 INVALID_BARCODE = "DN_invalid"
 LESS_TUBES_BARCODE = "DN_lesstubes"
 DIFF_TUBES_BARCODE = "DN_difftubes"
+SIZE48_BARCODE = "DN_48_valid"
 
 
 def test_fail_if_num_tubes_from_layout_and_mlwh_do_not_match(app, client, mocked_responses):
@@ -23,6 +24,7 @@ def test_fail_if_num_tubes_from_layout_and_mlwh_do_not_match(app, client, mocked
             f'{current_app.config["SS_TUBE_RACK_STATUS_ENDPOINT"]}'
         )
         mocked_responses.add(responses.POST, ss_url, body="{}", status=HTTPStatus.OK)
+
         response = client.post(f"{WRANGLE_URL}/DN_48_less_tubes")
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert "TubesCountError" in response.get_json()["error"]
@@ -83,3 +85,5 @@ def test_indeterminable_wrangle(app, client):
         response = client.post(f"{WRANGLE_URL}/DN_48_indeterminable")
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert "IndeterminableLabwareError" in response.get_json()["error"]
+
+
