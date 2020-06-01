@@ -37,8 +37,8 @@ def run():
 
     # Look up various UUIDs ahead of labware creation, so it only has to happen once
     study_uuids = get_study_uuids({row["study"] for row in mlwh_rows})
-    plate_plate_purpose_uuid = get_plate_plate_purpose_uuid()
-    rack_plate_purpose_uuid = get_tube_rack_plate_purpose_uuid()
+    plate_plate_purpose_uuid = get_plate_purpose_uuid()
+    rack_plate_purpose_uuid = get_tube_rack_purpose_uuid()
 
     ss_responses = create_labwares(
         mlwh_rows,
@@ -92,11 +92,11 @@ def get_study_uuids(studies: Iterable[str]) -> Dict[str, str]:
     return {study: get_entity_uuid(STUDY_ENTITY, study) for study in studies}
 
 
-def get_plate_plate_purpose_uuid() -> str:
+def get_plate_purpose_uuid() -> str:
     return get_entity_uuid(PLATE_PURPOSE_ENTITY, HERON_PLATE_PURPOSE)
 
 
-def get_tube_rack_plate_purpose_uuid() -> str:
+def get_tube_rack_purpose_uuid() -> str:
     return get_entity_uuid(PLATE_PURPOSE_ENTITY, HERON_TR_PURPOSE)
 
 
@@ -130,14 +130,11 @@ def create_labwares(mlwh_rows, **kwargs) -> Generator:
             response, status_code = create_plate(labware_body)
 
         elif labware_type == LabwareType.TUBE_RACK:
-            # There's currently no way to tell what size a tube rack in the MLWH is.
-            # For now (and for foreseeable future) it's only going to be 96 released from CGaP.
             labware_body = create_tube_rack_body(
-                96,
                 barcode,
                 container_rows,
                 study_uuid=study_uuid,
-                plate_purpose_uuid=kwargs.get("plate_purpose_uuids", {}).get(LabwareType.TUBE_RACK),
+                purpose_uuid=kwargs.get("plate_purpose_uuids", {}).get(LabwareType.TUBE_RACK),
             )
             response, status_code = create_tube_rack(labware_body)
         else:

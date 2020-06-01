@@ -55,7 +55,7 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Tuple[int, Dict[str, Any]]:
 
 
 def validate_tubes(
-    tube_rack_barcode: str, layout_dict: Dict[str, Any], database_dict: Dict[str, str]
+    tube_rack_barcode: str, layout_tube_barcodes: List[str], db_tube_barcodes: List[str]
 ) -> bool:
     """Validates that the number of tubes in the tube rack CSV file are the same as those in the
     MLWH.
@@ -75,62 +75,31 @@ def validate_tubes(
     """
     logger.debug("Validating tubes")
 
-    tubes_layout = list(layout_dict.keys())
-    tubes_database = list(database_dict.keys())
-
-    if len(tubes_layout) != len(tubes_database):
+    if len(layout_tube_barcodes) != len(db_tube_barcodes):
         raise TubesCountError(tube_rack_barcode)
-    if len(set(tubes_layout) - set(tubes_database)) != 0:
+
+    if set(layout_tube_barcodes) != set(db_tube_barcodes):
         raise BarcodesMismatchError(tube_rack_barcode)
 
     return True
 
 
-def wrangle_tube_rack(
-    tube_rack_barcode: str,
-    tubes_and_coordinates: Dict[str, Any],
-    mlwh_results: List[Dict[str, str]],
-) -> List[Dict[str, str]]:
-    """Wrangle with the given tube rack barcode.
-
-    Arguments:
-        tube_rack_barcode {str} -- tube rack barcode to wrangle with
-        tubes_and_coordinates {Dict[str, Any]} -- tube barcodes with their coordinates
-        mlwh_results {List[Dict[str, str]]} -- results from the MLWH query for the rack barcode
-
-    Returns:
-        Dict[str, Dict[str, Any]] -- the tube rack body to send to SS
-    """
-    # create a dict with tube barcode as key and supplier sample ID as value
-    tube_sample_dict = {row["tube_barcode"]: row["supplier_sample_id"] for row in mlwh_results}
-
-    # we need to compare the count of records in the MLWH with the count of valid tube barcodes in
-    #   the parsed CSV file - if these are not the same, exit early
-    validate_tubes(tube_rack_barcode, tubes_and_coordinates["layout"], tube_sample_dict)
-
+def create_tube_rack_body(
+    tube_rack_barcode: str, mlwh_results: List[Dict[str, str]], purpose_uuid: str, study_uuid: str,
+):
     tubes = {}
-    for tube_barcode, coordinate in tubes_and_coordinates["layout"].items():
-        tubes[coordinate] = {
-            "barcode": tube_barcode,
-            "content": sample_contents_for(tube_sample_dict[tube_barcode]),
+
+    for row in mlwh_results:
+        tubes[row["position"]] = {
+            "barcode": row["container_barcode"],
+            "content": sample_contents_for(row["supplier_sample_id"]),
         }
 
-    logger.debug(f"Tubes: {tubes}")
-
-    return tubes
-
-
-def create_tube_rack_body(
-    tube_rack_barcode: str,
-    tubes: List[Dict[str, str]],
-    plate_purpose_uuid: str,
-    study_uuid: str,
-):
     tube_rack_attributes = {
         "tube_rack": {
             "barcode": tube_rack_barcode,
             "tubes": tubes,
-            "purpose_uuid": plate_purpose_uuid,
+            "purpose_uuid": purpose_uuid,
             "study_uuid": study_uuid,
         }
     }

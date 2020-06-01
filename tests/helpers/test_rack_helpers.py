@@ -1,33 +1,31 @@
 from pytest import raises
-from unittest.mock import MagicMock, patch
 
-from wrangler.constants import DEFAULT_TUBE_RACK_SIZE
 from wrangler.exceptions import BarcodesMismatchError, TubesCountError
-from wrangler.helpers.rack_helpers import create_tube_rack_body, parse_tube_rack_csv, validate_tubes
+from wrangler.helpers.rack_helpers import parse_tube_rack_csv, validate_tubes
 
 
 def test_validate_tubes_different_barcodes():
     with raises(BarcodesMismatchError):
-        assert validate_tubes("blah", {"T1": 1, "T2": 2}, {"T2": 1, "T3": 1})
+        validate_tubes("blah", ["T1", "T2"], ["T2", "T3"])
 
 
 def test_validate_tubes_more_in_layout():
     with raises(TubesCountError):
-        assert validate_tubes("blah", {"T1": 1, "T2": 2}, {"T2": 1})
+        validate_tubes("blah", ["T1", "T2"], ["T2"])
 
 
 def test_validate_tubes_less_in_layout():
     with raises(TubesCountError):
-        assert validate_tubes("blah", {"T1": 1}, {"T1": 1, "T2": 1})
+        validate_tubes("blah", ["T1"], ["T1", "T2"])
 
 
 def test_validate_tubes_duplication():
-    with raises(TubesCountError):
-        assert validate_tubes("blah", {"T1": 1, "T1": 1}, {"T1": 1, "T2": 1})
+    with raises(BarcodesMismatchError):
+        validate_tubes("blah", ["T1", "T1"], ["T1", "T2"])
 
 
 def test_validate_tubes_different_order():
-    assert validate_tubes("blah", {"T1": 1, "T2": 1}, {"T2": 1, "T1": 1}) is True
+    assert validate_tubes("blah", ["T1", "T2"], ["T2", "T1"])
 
 
 def test_parse_tube_rack_csv(app_db_less):
@@ -102,4 +100,3 @@ def test_parse_tube_rack_csv_ignores_no_read(app_db_less, client, tmpdir):
         rack_size, tube_dict = parse_tube_rack_csv("DN_48_no_read")
         assert rack_size == 48
         assert tube_dict == expected_output
-

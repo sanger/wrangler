@@ -46,12 +46,12 @@ def test_get_study_uuids(app, mocker):
         }
 
 
-def test_get_plate_plate_purpose_uuid(app, mocker):
+def test_get_plate_purpose_uuid(app, mocker):
     with app.app_context():
         mocker.patch.object(cgap_extraction, "get_entity_uuid")
         cgap_extraction.get_entity_uuid.return_value = "5555-5555-5555-5555"
 
-        result = cgap_extraction.get_plate_plate_purpose_uuid()
+        result = cgap_extraction.get_plate_purpose_uuid()
 
         assert (
             call(PLATE_PURPOSE_ENTITY, HERON_PLATE_PURPOSE)
@@ -60,12 +60,12 @@ def test_get_plate_plate_purpose_uuid(app, mocker):
         assert result == "5555-5555-5555-5555"
 
 
-def test_get_tube_rack_plate_purpose_uuids(app, mocker):
+def test_get_tube_rack_purpose_uuids(app, mocker):
     with app.app_context():
         mocker.patch.object(cgap_extraction, "get_entity_uuid")
         cgap_extraction.get_entity_uuid.return_value = "8888-8888-8888-8888"
 
-        result = cgap_extraction.get_tube_rack_plate_purpose_uuid()
+        result = cgap_extraction.get_tube_rack_purpose_uuid()
 
         assert (
             call(PLATE_PURPOSE_ENTITY, HERON_TR_PURPOSE)
@@ -151,7 +151,7 @@ def test_create_labwares(app, mocker):
 
         ss_response = next(result)
         cgap_extraction.create_tube_rack_body.assert_called_with(
-            96, "RACK-1", rack_rows, study_uuid="3333", plate_purpose_uuid="9999"
+            "RACK-1", rack_rows, study_uuid="3333", purpose_uuid="9999"
         )
         assert cgap_extraction.create_tube_rack.call_count == 1
         assert ss_response.barcode == "RACK-1"
@@ -186,15 +186,15 @@ def test_run(app, mocker):
     with app.app_context():
         unwrangled_labware_spy = mocker.spy(cgap_extraction, "get_unwrangled_labware")
         mocker.patch.object(cgap_extraction, "get_study_uuids")
-        mocker.patch.object(cgap_extraction, "get_plate_plate_purpose_uuid")
-        mocker.patch.object(cgap_extraction, "get_tube_rack_plate_purpose_uuid")
+        mocker.patch.object(cgap_extraction, "get_plate_purpose_uuid")
+        mocker.patch.object(cgap_extraction, "get_tube_rack_purpose_uuid")
         mocker.patch.object(cgap_extraction, "create_labwares")
         mocker.patch.object(cgap_extraction, "update_wrangled_labware")
 
         study_uuids = {"heron": "3333", "heron r and d": "5555"}
         cgap_extraction.get_study_uuids.return_value = study_uuids
-        cgap_extraction.get_plate_plate_purpose_uuid.return_value = "7777"
-        cgap_extraction.get_tube_rack_plate_purpose_uuid.return_value = "9999"
+        cgap_extraction.get_plate_purpose_uuid.return_value = "7777"
+        cgap_extraction.get_tube_rack_purpose_uuid.return_value = "9999"
         cgap_extraction.create_labwares.return_value = [
             cgap_extraction.SSResponse("RACK-1", {}, True),
             cgap_extraction.SSResponse("PLTE-1", {}, False),
@@ -203,8 +203,8 @@ def test_run(app, mocker):
         cgap_extraction.run()
 
         cgap_extraction.get_study_uuids.assert_called_with(set(["heron", "heron r and d"]))
-        cgap_extraction.get_plate_plate_purpose_uuid.assert_called_once
-        cgap_extraction.get_tube_rack_plate_purpose_uuid.assert_called_once
+        cgap_extraction.get_plate_purpose_uuid.assert_called_once
+        cgap_extraction.get_tube_rack_purpose_uuid.assert_called_once
         cgap_extraction.create_labwares.assert_called_once_with(
             unwrangled_labware_spy.spy_return,
             study_uuids=study_uuids,

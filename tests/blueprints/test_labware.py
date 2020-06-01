@@ -85,5 +85,3 @@ def test_indeterminable_wrangle(app, client):
         response = client.post(f"{WRANGLE_URL}/DN_48_indeterminable")
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert "IndeterminableLabwareError" in response.get_json()["error"]
-
-

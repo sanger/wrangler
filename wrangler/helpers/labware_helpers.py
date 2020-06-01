@@ -20,11 +20,8 @@ from wrangler.helpers.general_helpers import (
 )
 from wrangler.helpers.plate_helpers import create_plate
 from wrangler.helpers.plate_helpers import create_plate_body
-from wrangler.helpers.rack_helpers import (
-    create_tube_rack,
-    create_tube_rack_body,
-)
-from wrangler.helpers.rack_helpers import parse_tube_rack_csv, wrangle_tube_rack
+from wrangler.helpers.rack_helpers import create_tube_rack, create_tube_rack_body, validate_tubes
+from wrangler.helpers.rack_helpers import parse_tube_rack_csv
 from wrangler.utils import pretty
 
 logger = logging.getLogger(__name__)
@@ -72,13 +69,16 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
 
         if labware_type == LabwareType.TUBE_RACK:
             if csv_file_exists(f"{labware_barcode}.csv"):
-                tube_rack_size, tubes_and_coordinates = parse_tube_rack_csv(labware_barcode)
-                tubes = wrangle_tube_rack(labware_barcode, tubes_and_coordinates, results)
+                _, tubes_and_coordinates = parse_tube_rack_csv(labware_barcode)
+                db_tube_barcodes = [row["tube_barcode"] for row in results]
+                validate_tubes(
+                    labware_barcode, tubes_and_coordinates["layout"].keys(), db_tube_barcodes
+                )
 
                 tube_rack_body = create_tube_rack_body(
                     labware_barcode,
-                    tubes,
-                    plate_purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, STOCK_TR_PURPOSE_96),
+                    results,
+                    purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, STOCK_TR_PURPOSE_96),
                     study_uuid=get_entity_uuid(STUDY_ENTITY, study_name),
                 )
 
