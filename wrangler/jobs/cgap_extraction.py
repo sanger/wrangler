@@ -125,7 +125,7 @@ def create_labwares(mlwh_rows, **kwargs) -> Generator:
                 barcode,
                 container_rows,
                 study_uuid=study_uuid,
-                plate_purpose_uuid=kwargs.get("plate_purpose_uuids", {}).get(LabwareType.PLATE),
+                purpose_uuid=kwargs.get("plate_purpose_uuids", {}).get(LabwareType.PLATE),
             )
             response, status_code = create_plate(labware_body)
 

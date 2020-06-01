@@ -21,5 +21,5 @@ def test_create_plate_body():
     }
 
     assert create_plate_body(
-        plate_barcode, samples, plate_purpose_uuid=plate_purpose_uuid, study_uuid=study_uuid
+        plate_barcode, samples, purpose_uuid=plate_purpose_uuid, study_uuid=study_uuid
     ) == {"data": {"type": "plates", "attributes": body}}

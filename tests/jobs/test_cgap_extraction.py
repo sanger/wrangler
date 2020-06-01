@@ -160,7 +160,7 @@ def test_create_labwares(app, mocker):
 
         ss_response = next(result)
         cgap_extraction.create_plate_body.assert_called_with(
-            "PLTE-1", plate_rows, study_uuid="5555", plate_purpose_uuid="7777"
+            "PLTE-1", plate_rows, study_uuid="5555", purpose_uuid="7777"
         )
         assert cgap_extraction.create_plate.call_count == 1
         assert ss_response.barcode == "PLTE-1"
