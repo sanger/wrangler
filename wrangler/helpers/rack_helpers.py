@@ -91,17 +91,15 @@ def create_tube_rack_body(
 
     for row in mlwh_results:
         tubes[row["position"]] = {
-            "barcode": row["container_barcode"],
+            "barcode": row["tube_barcode"],
             "content": sample_contents_for(row["supplier_sample_id"]),
         }
 
     tube_rack_attributes = {
-        "tube_rack": {
-            "barcode": tube_rack_barcode,
-            "tubes": tubes,
-            "purpose_uuid": purpose_uuid,
-            "study_uuid": study_uuid,
-        }
+        "barcode": tube_rack_barcode,
+        "purpose_uuid": purpose_uuid,
+        "study_uuid": study_uuid,
+        "tubes": tubes,
     }
     body = {"data": {"attributes": tube_rack_attributes}}
 

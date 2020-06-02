@@ -1,7 +1,7 @@
 from pytest import raises
 
 from wrangler.exceptions import BarcodesMismatchError, TubesCountError
-from wrangler.helpers.rack_helpers import parse_tube_rack_csv, validate_tubes
+from wrangler.helpers.rack_helpers import parse_tube_rack_csv, validate_tubes, create_tube_rack_body
 
 
 def test_validate_tubes_different_barcodes():
@@ -100,3 +100,23 @@ def test_parse_tube_rack_csv_ignores_no_read(app_db_less, client, tmpdir):
         rack_size, tube_dict = parse_tube_rack_csv("DN_48_no_read")
         assert rack_size == 48
         assert tube_dict == expected_output
+
+
+def test_create_tube_rack_body():
+    mlwh_results = [
+        {"position": "A01", "tube_barcode": "TB123", "supplier_sample_id": "xyz123"},
+        {"position": "A02", "tube_barcode": "TB456", "supplier_sample_id": "xyz456"},
+    ]
+    tube_rack_barcode = "DN123"
+    tube_rack_attributes = {
+        "barcode": tube_rack_barcode,
+        "purpose_uuid": "1234",
+        "study_uuid": "5678",
+        "tubes": {
+            "A01": {"barcode": "TB123", "content": {"supplier_name": "xyz123",},},
+            "A02": {"barcode": "TB456", "content": {"supplier_name": "xyz456",},},
+        },
+    }
+    body = {"data": {"attributes": tube_rack_attributes}}
+
+    assert create_tube_rack_body(tube_rack_barcode, mlwh_results, "1234", "5678") == body
