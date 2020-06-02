@@ -18,10 +18,13 @@ from wrangler.helpers.general_helpers import (
     LabwareType,
     get_entity_uuid,
 )
-from wrangler.helpers.plate_helpers import create_plate
-from wrangler.helpers.plate_helpers import create_plate_body
-from wrangler.helpers.rack_helpers import create_tube_rack, create_tube_rack_body, validate_tubes
-from wrangler.helpers.rack_helpers import parse_tube_rack_csv
+from wrangler.helpers.plate_helpers import create_plate, create_plate_body
+from wrangler.helpers.rack_helpers import (
+    create_tube_rack,
+    create_tube_rack_body,
+    parse_tube_rack_csv,
+    validate_tubes,
+)
 from wrangler.utils import pretty
 
 logger = logging.getLogger(__name__)

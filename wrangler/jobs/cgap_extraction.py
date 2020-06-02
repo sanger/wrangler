@@ -37,15 +37,15 @@ def run():
 
     # Look up various UUIDs ahead of labware creation, so it only has to happen once
     study_uuids = get_study_uuids({row["study"] for row in mlwh_rows})
-    plate_plate_purpose_uuid = get_plate_purpose_uuid()
-    rack_plate_purpose_uuid = get_tube_rack_purpose_uuid()
+    plate_purpose_uuid = get_plate_purpose_uuid()
+    rack_purpose_uuid = get_tube_rack_purpose_uuid()
 
     ss_responses = create_labwares(
         mlwh_rows,
         study_uuids=study_uuids,
         plate_purpose_uuids={
-            LabwareType.PLATE: plate_plate_purpose_uuid,
-            LabwareType.TUBE_RACK: rack_plate_purpose_uuid,
+            LabwareType.PLATE: plate_purpose_uuid,
+            LabwareType.TUBE_RACK: rack_purpose_uuid,
         },
     )
 
