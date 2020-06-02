@@ -29,4 +29,4 @@ def create_plate_body(
 
 
 def create_plate(plate_body: Dict[str, Union[str, Dict]]):
-    return send_request_to_sequencescape(app.config["SS_TUBE_RACK_ENDPOINT"], plate_body)
+    return send_request_to_sequencescape(app.config["SS_PLATE_ENDPOINT"], plate_body)
