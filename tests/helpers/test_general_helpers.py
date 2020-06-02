@@ -4,11 +4,12 @@ import responses
 from flask import current_app
 from pytest import raises
 
-from wrangler.constants import PLATE, STATUS_VALIDATION_FAILED, TUBE_RACK
+from wrangler.constants import STATUS_VALIDATION_FAILED
 from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError
 from wrangler.helpers.general_helpers import (
     csv_file_exists,
     determine_labware_type,
+    LabwareType,
     error_request_body,
     get_entity_uuid,
     handle_error,
@@ -85,12 +86,12 @@ def test_determine_labware_type(app_db_less):
     with app_db_less.app_context():
         assert (
             determine_labware_type("blah", [{"tube_barcode": "123"}, {"tube_barcode": "456"}])
-            == TUBE_RACK
+            == LabwareType.TUBE_RACK
         )
 
         assert (
             determine_labware_type("blah", [{"tube_barcode": None}, {"tube_barcode": None}])
-            == PLATE
+            == LabwareType.PLATE
         )
 
         with raises(IndeterminableLabwareError):

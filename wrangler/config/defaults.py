@@ -18,6 +18,12 @@ SS_TUBE_RACK_STATUS_ENDPOINT = "/api/v2/heron/tube_rack_statuses"
 # tube rack CSV directory
 TUBE_RACK_DIR = "/Users/pj5/dev/psd/wrangler/tests/csvs"
 
+# Scheduler
+ENABLE_SCHEDULER = True
+
+# CGaP
+CGAP_EXTRACTION_DESTINATION = "CGAP Extraction"
+
 # slack details
 SLACK_API_TOKEN = ""
 SLACK_CHANNEL_ID = ""

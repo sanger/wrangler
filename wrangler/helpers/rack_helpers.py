@@ -1,22 +1,13 @@
 import csv
 import logging
 from os.path import join
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 from flask import current_app as app
 
 from wrangler.exceptions import BarcodesMismatchError, TubesCountError
+from wrangler.helpers.general_helpers import send_request_to_sequencescape
 from wrangler.helpers.sample_helpers import sample_contents_for
-from wrangler.helpers.general_helpers import get_entity_uuid
-
-from wrangler.constants import (
-    PLATE_PURPOSE_ENTITY,
-    RACK_PURPOSE_48,
-    RACK_PURPOSE_96,
-    STUDY_ENTITY,
-    STUDY_HERON,
-    DEFAULT_TUBE_RACK_SIZE,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +55,7 @@ def parse_tube_rack_csv(tube_rack_barcode: str) -> Tuple[int, Dict[str, Any]]:
 
 
 def validate_tubes(
-    tube_rack_barcode: str, layout_dict: Dict[str, Any], database_dict: Dict[str, str]
+    tube_rack_barcode: str, layout_tube_barcodes: List[str], db_tube_barcodes: List[str]
 ) -> bool:
     """Validates that the number of tubes in the tube rack CSV file are the same as those in the
     MLWH.
@@ -84,81 +75,38 @@ def validate_tubes(
     """
     logger.debug("Validating tubes")
 
-    tubes_layout = list(layout_dict.keys())
-    tubes_database = list(database_dict.keys())
-
-    if len(tubes_layout) != len(tubes_database):
+    if len(layout_tube_barcodes) != len(db_tube_barcodes):
         raise TubesCountError(tube_rack_barcode)
-    if len(set(tubes_layout) - set(tubes_database)) != 0:
+
+    if set(layout_tube_barcodes) != set(db_tube_barcodes):
         raise BarcodesMismatchError(tube_rack_barcode)
 
     return True
 
 
-def wrangle_tube_rack(
-    tube_rack_barcode: str,
-    tubes_and_coordinates: Dict[str, Any],
-    mlwh_results: List[Dict[str, str]],
-    **kwargs,
-) -> Dict[str, Dict[str, Any]]:
-    """Wrangle with the given tube rack barcode.
-
-    Arguments:
-        tube_rack_barcode {str} -- tube rack barcode to wrangle with
-        tubes_and_coordinates {Dict[str, Any]} -- tube barcodes with their coordinates
-        mlwh_results {List[Dict[str, str]]} -- results from the MLWH query for the rack barcode
-
-    Returns:
-        Dict[str, Dict[str, Any]] -- the tube rack body to send to SS
-    """
-    # create a dict with tube barcode as key and supplier sample ID as value
-    tube_sample_dict = {row["tube_barcode"]: row["supplier_sample_id"] for row in mlwh_results}
-
-    # we need to compare the count of records in the MLWH with the count of valid tube barcodes in
-    #   the parsed CSV file - if these are not the same, exit early
-    validate_tubes(tube_rack_barcode, tubes_and_coordinates["layout"], tube_sample_dict)
-
+def create_tube_rack_body(
+    tube_rack_barcode: str, mlwh_results: List[Dict[str, str]], purpose_uuid: str, study_uuid: str,
+):
     tubes = {}
-    for tube_barcode, coordinate in tubes_and_coordinates["layout"].items():
-        tubes[coordinate] = {
-            "barcode": tube_barcode,
-            "content": sample_contents_for(tube_sample_dict[tube_barcode]),
+
+    for row in mlwh_results:
+        tubes[row["position"]] = {
+            "barcode": row["tube_barcode"],
+            "content": sample_contents_for(row["supplier_sample_id"]),
         }
 
-    logger.debug(f"Tubes: {tubes}")
-
-    return create_tube_rack_body(tube_rack_barcode, tubes, **kwargs)
-
-
-def create_tube_rack_body(
-    tube_rack_barcode: str,
-    tubes: Dict[Any, Dict[str, Any]],
-    tube_rack_size: int = DEFAULT_TUBE_RACK_SIZE,
-) -> Dict[str, Dict[str, Any]]:
-    """Creates the tube rack body which is sent to SS.
-
-    Arguments:
-        tube_rack_barcode {str} -- tube rack barcode to include in body
-        tubes {Dict[Any, Dict[str, Any]]} -- list of tubes with their info
-
-    Keyword Arguments:
-        tube_rack_size {int} -- the size of the tube rack to create in SS (default:
-        {DEFAULT_TUBE_RACK_SIZE})
-
-    Returns:
-        Dict[str, Dict[str, Any]] -- body to include in request to SS
-    """
-    purpose_name = RACK_PURPOSE_48 if tube_rack_size == 48 else RACK_PURPOSE_96
-
-    tube_rack_response = {
+    tube_rack_attributes = {
         "barcode": tube_rack_barcode,
-        "purpose_uuid": get_entity_uuid(PLATE_PURPOSE_ENTITY, purpose_name),
-        "study_uuid": get_entity_uuid(STUDY_ENTITY, STUDY_HERON),
+        "purpose_uuid": purpose_uuid,
+        "study_uuid": study_uuid,
         "tubes": tubes,
     }
-
-    body = {"data": {"attributes": tube_rack_response}}
+    body = {"data": {"attributes": tube_rack_attributes}}
 
     logger.debug(f"Body to send to SS: {body}")
 
     return body
+
+
+def create_tube_rack(tube_rack_body: Dict[str, Union[str, Dict]]):
+    return send_request_to_sequencescape(app.config["SS_TUBE_RACK_ENDPOINT"], tube_rack_body)

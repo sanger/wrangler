@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from urllib.parse import urlencode
 
 import responses
 from flask import current_app
@@ -41,19 +42,26 @@ def test_fail_if_any_tube_barcode_different_between_layout_and_mlwh(app, client,
         assert "BarcodesMismatchError" in response.get_json()["error"]
 
 
-def test_valid_barcode_wrangle(app, client, mocked_ss_calls_with_study_and_rack_96_purpose):
+def test_valid_barcode_wrangle(app, client, mocked_responses):
     with app.app_context():
         ss_url = (
             f'http://{current_app.config["SS_HOST"]}'
             f'{current_app.config["SS_TUBE_RACK_ENDPOINT"]}'
         )
 
-        mocked_ss_calls_with_study_and_rack_96_purpose.add(
-            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED
+        purpose_url = f"http://{current_app.config['SS_HOST']}/api/v2/purposes?{urlencode({'filter[name]': 'TR Stock 96'})}"
+        study_url = f"http://{current_app.config['SS_HOST']}/api/v2/studies?{urlencode({'filter[name]': 'heron'})}"
+
+        # Entity Lookups
+        mocked_responses.add(
+            responses.GET, purpose_url, json={"data": [{"attributes": {"uuid": "1111"}}]}
         )
-        mocked_ss_calls_with_study_and_rack_96_purpose.add(
-            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED
+        mocked_responses.add(
+            responses.GET, study_url, json={"data": [{"attributes": {"uuid": "2222"}}]}
         )
+
+        mocked_responses.add(responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED)
+        mocked_responses.add(responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED)
 
         response = client.post(f"{WRANGLE_URL}/DN_48_valid")
 
@@ -77,17 +85,3 @@ def test_indeterminable_wrangle(app, client):
         response = client.post(f"{WRANGLE_URL}/DN_48_indeterminable")
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert "IndeterminableLabwareError" in response.get_json()["error"]
-
-
-def test_size48_wrangle(app, client, mocked_ss_calls_for_96_rack):
-    with app.app_context():
-        ss_url = (
-            f'http://{current_app.config["SS_HOST"]}'
-            f'{current_app.config["SS_TUBE_RACK_ENDPOINT"]}'
-        )
-        mocked_ss_calls_for_96_rack.add(
-            responses.POST, ss_url, body="{}", status=HTTPStatus.CREATED
-        )
-        response = client.post(f"{WRANGLE_URL}/{SIZE48_BARCODE}")
-        assert response.status_code == HTTPStatus.CREATED
-        assert response.get_json() == {}

@@ -2,6 +2,7 @@ from wrangler.config.defaults import *  # noqa: F403,F401
 
 # settings here overwrite those in 'defaults.py'
 TESTING = True
+ENABLE_SCHEDULER = False
 
 # MLWH details
 MLWH_DB_DBNAME = "mlwarehouse_test"

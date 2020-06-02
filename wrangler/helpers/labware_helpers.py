@@ -4,16 +4,27 @@ from typing import Dict, Tuple
 
 from flask import current_app as app
 
-from wrangler.constants import PLATE, TUBE_RACK
+from wrangler.constants import (
+    PLATE_PURPOSE_ENTITY,
+    STOCK_PLATE_PURPOSE,
+    STUDY_ENTITY,
+    STOCK_TR_PURPOSE_96,
+)
 from wrangler.db import get_db
 from wrangler.exceptions import BarcodeNotFoundError, CsvNotFoundError
 from wrangler.helpers.general_helpers import (
     csv_file_exists,
     determine_labware_type,
-    send_request_to_sequencescape,
+    LabwareType,
+    get_entity_uuid,
 )
-from wrangler.helpers.plate_helpers import create_plate_body
-from wrangler.helpers.rack_helpers import parse_tube_rack_csv, wrangle_tube_rack
+from wrangler.helpers.plate_helpers import create_plate, create_plate_body
+from wrangler.helpers.rack_helpers import (
+    create_tube_rack,
+    create_tube_rack_body,
+    parse_tube_rack_csv,
+    validate_tubes,
+)
 from wrangler.utils import pretty
 
 logger = logging.getLogger(__name__)
@@ -55,22 +66,37 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
         labware_type = determine_labware_type(labware_barcode, results)
         logger.info(f"Determined labware type: {labware_type}")
 
-        if labware_type == TUBE_RACK:
+        # Assuming study is the same for all wells/tubes in a container
+        study_name = results[0]["study"]
+        logger.info(f"Study name: {study_name}")
+
+        if labware_type == LabwareType.TUBE_RACK:
             if csv_file_exists(f"{labware_barcode}.csv"):
                 _, tubes_and_coordinates = parse_tube_rack_csv(labware_barcode)
-
-                ss_request_body = wrangle_tube_rack(labware_barcode, tubes_and_coordinates, results)
-
-                return send_request_to_sequencescape(
-                    app.config["SS_TUBE_RACK_ENDPOINT"], ss_request_body
+                db_tube_barcodes = [row["tube_barcode"] for row in results]
+                validate_tubes(
+                    labware_barcode, tubes_and_coordinates["layout"].keys(), db_tube_barcodes
                 )
+
+                tube_rack_body = create_tube_rack_body(
+                    labware_barcode,
+                    results,
+                    purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, STOCK_TR_PURPOSE_96),
+                    study_uuid=get_entity_uuid(STUDY_ENTITY, study_name),
+                )
+
+                return create_tube_rack(tube_rack_body)
             else:
                 raise CsvNotFoundError(labware_barcode)
 
-        if labware_type == PLATE:
-            ss_request_body = create_plate_body(labware_barcode, results)
-
-            return send_request_to_sequencescape(app.config["SS_PLATE_ENDPOINT"], ss_request_body)
+        if labware_type == LabwareType.PLATE:
+            plate_body = create_plate_body(
+                labware_barcode,
+                results,
+                purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, STOCK_PLATE_PURPOSE),
+                study_uuid=get_entity_uuid(STUDY_ENTITY, study_name),
+            )
+            return create_plate(plate_body)
 
         return {}, HTTPStatus.INTERNAL_SERVER_ERROR
     else:

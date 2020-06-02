@@ -20,6 +20,20 @@ The routes of the service are:
     racks.get_tubes_from_rack_barcode  GET      /tube_rack/<tube_rack_barcode>
     static                             GET      /static/<path:filename>
 
+The service uses a scheduled job to periodically query the multi-LIMS warehouse (MLWH) cgap_heron table for rows with a
+destination of "CGAP Extraction" that haven't yet been wrangled (i.e. the wrangled column is `null`). It will create
+each plate or tube rack in Sequencescape, and subsequently mark the rows in the MLWH as wrangled (i.e. wrangled will be
+updated with a timestamp).
+
+Plates and tube racks created within this scheduled job will have the following plate purposes (set in the
+`constants.py` file):
+
+- Plate: `Heron Lysed Plate`
+- Tube Rack: `Heron Lysed Tube Rack`
+
+This scheduled job can be enabled or disabled by setting the `ENABLE_SCHEDULER` config variable to `True` or `False`
+respectively.
+
 ## Requirements
 
 * [pyenv](https://github.com/pyenv/pyenv)
