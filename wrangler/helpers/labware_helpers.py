@@ -104,7 +104,7 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
             plate_body = create_plate_body(
                 labware_barcode,
                 results,
-                purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, EXTRACT_PLATE_PURPOSE),
+                purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, purpose_name),
                 study_uuid=get_entity_uuid(STUDY_ENTITY, study_name),
             )
             return create_plate(plate_body)
