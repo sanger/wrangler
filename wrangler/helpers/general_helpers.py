@@ -2,13 +2,24 @@ import logging
 from enum import Enum
 from http import HTTPStatus
 from os.path import getsize, isfile, join
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, List
 
 import requests
 from flask import current_app as app
 
-from wrangler.constants import STATUS_VALIDATION_FAILED
-from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError
+from wrangler.constants import (
+    STATUS_VALIDATION_FAILED,
+    EXTRACT_TR_PURPOSE_96,
+    LYSATE_TR_PURPOSE,
+    EXTRACT_PLATE_PURPOSE,
+    LYSATE_PLATE_PURPOSE
+)
+from wrangler.exceptions import (
+    BarcodeNotFoundError,
+    IndeterminableLabwareError,
+    IndeterminableSampleTypeError,
+    IndeterminablePurposeError
+)
 from wrangler.utils import pretty
 
 logger = logging.getLogger(__name__)
@@ -158,14 +169,19 @@ class LabwareType(Enum):
     TUBE_RACK = 1
     PLATE = 2
 
+class SampleType(Enum):
+    EXTRACT = 1
+    LYSATE = 2
 
-def determine_labware_type(labware_barcode, records) -> LabwareType:
+
+def determine_labware_type(labware_barcode: str, records: List[Dict[str, str]]) -> LabwareType:
     """Determine the type of labware in the MLWH table by inspecting the records.
 
     - If all the records have a tube barcode, assume it is a tube rack
     - If all the records' tube barcode field is empty, assume it is a plate
 
     Arguments:
+        labware_barcode {str} -- barcode of the labware we're determining the type of
         records {List[Dict[str, str]]} -- records from the MLWH
 
     Raises:
@@ -181,3 +197,49 @@ def determine_labware_type(labware_barcode, records) -> LabwareType:
         return LabwareType.PLATE
 
     raise IndeterminableLabwareError(labware_barcode)
+
+def determine_sample_type(labware_barcode: str, records: List[Dict[str, str]]) -> SampleType:
+    """Determine the type of sample (whether extract or lysed) in the MLWH table by inspecting the records.
+
+    Arguments:
+        labware_barcode {str} -- barcode of the labware holding the samples we're determining the type of
+        records {List[Dict[str, str]]} -- records from the MLWH
+
+    Raises:
+        IndeterminableSampleTypeError: when the sample type is not discernable
+
+    Returns:
+        SampleType -- sample type
+    """
+    # Assuming sample_type will be the same for all wells/tubes within a container
+    sample_type = records[0]["sample_state"]
+
+    if sample_type == "Extract":
+        return SampleType.EXTRACT
+
+    if sample_type == "Lysate":
+        return SampleType.LYSATE
+
+    raise IndeterminableSampleTypeError(labware_barcode)
+
+def determine_purpose_name(labware_barcode: str, labware_type: LabwareType, sample_type: SampleType) -> str:
+    """Determine the plate or rack purpose name, from the sample type and labware type.
+
+    Arguments:
+        labware_barcode {str} -- barcode of the labware, of which we are setting the purpose
+        labware_type {LabwareType} -- enum representing plate or tube rack
+        sample_type {SampleType} -- enum representing lysate or extract
+
+    Raises:
+        IndeterminablePurposeError: when the purpose is not discernable
+
+    Returns:
+        str -- the purpose name
+    """
+    if labware_type == LabwareType.TUBE_RACK:
+        return EXTRACT_TR_PURPOSE_96 if sample_type == SampleType.EXTRACT else LYSATE_TR_PURPOSE
+
+    if  labware_type == LabwareType.PLATE:
+        return EXTRACT_PLATE_PURPOSE if sample_type == SampleType.EXTRACT else LYSATE_PLATE_PURPOSE
+
+    raise IndeterminablePurposeError(labware_barcode)
