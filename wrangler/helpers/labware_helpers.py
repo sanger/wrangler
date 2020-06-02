@@ -6,9 +6,11 @@ from flask import current_app as app
 
 from wrangler.constants import (
     PLATE_PURPOSE_ENTITY,
-    EXTRACT_PLATE_PURPOSE,
     STUDY_ENTITY,
+    EXTRACT_PLATE_PURPOSE,
     EXTRACT_TR_PURPOSE_96,
+    LYSATE_PLATE_PURPOSE,
+    LYSATE_TR_PURPOSE
 )
 from wrangler.db import get_db
 from wrangler.exceptions import BarcodeNotFoundError, CsvNotFoundError
@@ -16,6 +18,8 @@ from wrangler.helpers.general_helpers import (
     csv_file_exists,
     determine_labware_type,
     LabwareType,
+    determine_sample_type,
+    SampleType,
     get_entity_uuid,
 )
 from wrangler.helpers.plate_helpers import create_plate, create_plate_body
@@ -66,6 +70,9 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
         labware_type = determine_labware_type(labware_barcode, results)
         logger.info(f"Determined labware type: {labware_type}")
 
+        sample_type = determine_sample_type(labware_barcode, results)
+        logger.info(f"Determined sample type: {sample_type}")
+
         # Assuming study is the same for all wells/tubes in a container
         study_name = results[0]["study"]
         logger.info(f"Study name: {study_name}")
@@ -78,10 +85,12 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
                     labware_barcode, tubes_and_coordinates["layout"].keys(), db_tube_barcodes
                 )
 
+                purpose_name = EXTRACT_TR_PURPOSE_96 if sample_type == SampleType.EXTRACT else LYSATE_TR_PURPOSE
+
                 tube_rack_body = create_tube_rack_body(
                     labware_barcode,
                     results,
-                    purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, EXTRACT_TR_PURPOSE_96),
+                    purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, purpose_name),
                     study_uuid=get_entity_uuid(STUDY_ENTITY, study_name),
                 )
 
@@ -90,6 +99,8 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
                 raise CsvNotFoundError(labware_barcode)
 
         if labware_type == LabwareType.PLATE:
+            purpose_name = EXTRACT_PLATE_PURPOSE if sample_type == SampleType.EXTRACT else LYSATE_PLATE_PURPOSE
+
             plate_body = create_plate_body(
                 labware_barcode,
                 results,

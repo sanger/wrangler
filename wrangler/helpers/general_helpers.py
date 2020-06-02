@@ -8,7 +8,7 @@ import requests
 from flask import current_app as app
 
 from wrangler.constants import STATUS_VALIDATION_FAILED
-from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError
+from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError, IndeterminableSampleTypeError
 from wrangler.utils import pretty
 
 logger = logging.getLogger(__name__)
@@ -158,6 +158,10 @@ class LabwareType(Enum):
     TUBE_RACK = 1
     PLATE = 2
 
+class SampleType(Enum):
+    EXTRACT = 1
+    LYSATE = 2
+
 
 def determine_labware_type(labware_barcode, records) -> LabwareType:
     """Determine the type of labware in the MLWH table by inspecting the records.
@@ -181,3 +185,26 @@ def determine_labware_type(labware_barcode, records) -> LabwareType:
         return LabwareType.PLATE
 
     raise IndeterminableLabwareError(labware_barcode)
+
+def determine_sample_type(labware_barcode, records) -> SampleType:
+    """Determine the type of sample (whether extract or lysed) in the MLWH table by inspecting the records.
+
+    Arguments:
+        records {List[Dict[str, str]]} -- records from the MLWH
+
+    Raises:
+        IndeterminableSampleTypeError: when the sample type is not discernable
+
+    Returns:
+        SampleType -- sample type
+    """
+    # Assuming sample_type will be the same for all wells/tubes within a container
+    sample_type = records[0]["sample_type"]
+
+    if sample_type == "extract":
+        return SampleType.EXTRACT
+
+    if sample_type in ["lysate", "primary"]:
+        return SampleType.LYSATE
+
+    raise IndeterminableSampleTypeError(labware_barcode)

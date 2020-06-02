@@ -126,3 +126,27 @@ class IndeterminableLabwareError(Error):
             return f"{default_message} - {self.message}"
         else:
             return default_message
+
+class IndeterminableSampleTypeError(Error):
+    def __init__(self, labware_barcode: str, message: str = None):
+        """Raised when the sample type is indeterminable from the data stored in the MLWH table.
+
+        Arguments:
+            labware_barcode {str} -- barcode of the labware
+
+        Keyword Arguments:
+            message {str} -- extra message to add to the exception (default: {None})
+        """
+        self.message = message
+        self.labware_barcode = labware_barcode
+
+    def __str__(self):
+        default_message = (
+            f"IndeterminableSampleTypeError: [{self.labware_barcode}] Cannot determine the type of "
+            "sample (e.g. 'lysate') from the records in the MLWH"
+        )
+
+        if self.message:
+            return f"{default_message} - {self.message}"
+        else:
+            return default_message
