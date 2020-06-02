@@ -6,9 +6,9 @@ from flask import current_app as app
 
 from wrangler.constants import (
     PLATE_PURPOSE_ENTITY,
-    STOCK_PLATE_PURPOSE,
+    EXTRACT_PLATE_PURPOSE,
     STUDY_ENTITY,
-    STOCK_TR_PURPOSE_96,
+    EXTRACT_TR_PURPOSE_96,
 )
 from wrangler.db import get_db
 from wrangler.exceptions import BarcodeNotFoundError, CsvNotFoundError
@@ -81,7 +81,7 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
                 tube_rack_body = create_tube_rack_body(
                     labware_barcode,
                     results,
-                    purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, STOCK_TR_PURPOSE_96),
+                    purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, EXTRACT_TR_PURPOSE_96),
                     study_uuid=get_entity_uuid(STUDY_ENTITY, study_name),
                 )
 
@@ -93,7 +93,7 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
             plate_body = create_plate_body(
                 labware_barcode,
                 results,
-                purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, STOCK_PLATE_PURPOSE),
+                purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, EXTRACT_PLATE_PURPOSE),
                 study_uuid=get_entity_uuid(STUDY_ENTITY, study_name),
             )
             return create_plate(plate_body)
