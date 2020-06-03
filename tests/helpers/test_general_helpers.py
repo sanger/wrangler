@@ -5,11 +5,13 @@ from flask import current_app
 from pytest import raises
 
 from wrangler.constants import STATUS_VALIDATION_FAILED
-from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError
+from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError, IndeterminableSampleTypeError
 from wrangler.helpers.general_helpers import (
     csv_file_exists,
     determine_labware_type,
     LabwareType,
+    determine_sample_type,
+    SampleType,
     error_request_body,
     get_entity_uuid,
     handle_error,
@@ -97,6 +99,25 @@ def test_determine_labware_type(app_db_less):
         with raises(IndeterminableLabwareError):
             determine_labware_type("blah", [{"tube_barcode": None}, {"tube_barcode": "123"}])
 
+def test_determine_sample_type(app_db_less):
+    with app_db_less.app_context():
+        assert (
+            determine_sample_type("blah", [{"sample_type": "extract"}, {"sample_type": "extract"}])
+            == SampleType.EXTRACT
+        )
+
+        assert (
+            determine_sample_type("blah", [{"sample_type": "lysate"}, {"sample_type": "lysate"}])
+            == SampleType.LYSATE
+        )
+
+        assert (
+            determine_sample_type("blah", [{"sample_type": "primary"}, {"sample_type": "primary"}])
+            == SampleType.LYSATE
+        )
+
+        with raises(IndeterminableSampleTypeError):
+            determine_sample_type("blah", [{"sample_type": "stuff"}, {"sample_type": "primary"}])
 
 def test_get_entity_uuid(app_db_less, mocked_responses):
     with app_db_less.app_context():
