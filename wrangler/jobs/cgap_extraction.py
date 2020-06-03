@@ -1,3 +1,4 @@
+import logging
 from collections import namedtuple
 from http import HTTPStatus
 from itertools import groupby
@@ -16,6 +17,8 @@ from wrangler.helpers.general_helpers import determine_labware_type, get_entity_
 from wrangler.helpers.plate_helpers import create_plate, create_plate_body
 from wrangler.helpers.rack_helpers import create_tube_rack, create_tube_rack_body
 
+logger = logging.getLogger(__name__)
+
 SSResponse = namedtuple("SSResponse", "barcode body successful")
 
 
@@ -31,7 +34,7 @@ def run(app: Flask):
         None
     """
     with app.app_context():
-        app.logger.info("Starting cgap extraction job")
+        logger.info("Starting cgap extraction job")
         mlwh_rows = get_unwrangled_labware(
             app.config["MLWH_DB_TABLE"], app.config["CGAP_EXTRACTION_DESTINATION"]
         )
@@ -59,15 +62,15 @@ def run(app: Flask):
 
             if successful:
                 update_wrangled_labware(app.config["MLWH_DB_TABLE"], labware_barcodes)
-                app.logger.info(
+                logger.info(
                     f"The following labware were successfully created: {','.join(labware_barcodes)}"
                 )
             else:
-                app.logger.error(
+                logger.error(
                     f"The following labware failed to be created: {','.join(labware_barcodes)}"
                 )
                 for response in response_list:
-                    app.logger.error(response.body)
+                    logger.error(response.body)
 
 
 def get_unwrangled_labware(table: str, destination: str) -> List[Dict[str, str]]:
