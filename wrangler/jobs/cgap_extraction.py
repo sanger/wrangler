@@ -11,7 +11,7 @@ from wrangler.constants import (
     STUDY_ENTITY,
     HERON_PLATE_PURPOSE,
 )
-from wrangler.db import get_db
+from wrangler.db import get_db, get_db_connection
 from wrangler.helpers.general_helpers import determine_labware_type, get_entity_uuid, LabwareType
 from wrangler.helpers.plate_helpers import create_plate, create_plate_body
 from wrangler.helpers.rack_helpers import create_tube_rack, create_tube_rack_body
@@ -54,7 +54,8 @@ def run(app: Flask):
         )
 
         for successful, responses in groupby(ss_responses, lambda x: x.successful):
-            labware_barcodes = [x.barcode for x in responses]
+            response_list = list(responses)
+            labware_barcodes = [x.barcode for x in response_list]
 
             if successful:
                 update_wrangled_labware(app.config["MLWH_DB_TABLE"], labware_barcodes)
@@ -65,6 +66,8 @@ def run(app: Flask):
                 app.logger.error(
                     f"The following labware failed to be created: {','.join(labware_barcodes)}"
                 )
+                for response in response_list:
+                    app.logger.error(response.body)
 
 
 def get_unwrangled_labware(table: str, destination: str) -> List[Dict[str, str]]:
@@ -166,4 +169,5 @@ def update_wrangled_labware(table: str, container_barcodes: List[str]):
     )
     cursor = get_db()
     cursor.execute(query, tuple(container_barcodes))
+    get_db_connection().commit()
     return cursor
