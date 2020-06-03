@@ -14,7 +14,7 @@ from wrangler.db import get_db
 
 def test_get_unwrangled_labware(app):
     with app.app_context():
-        results = cgap_extraction.get_unwrangled_labware()
+        results = cgap_extraction.get_unwrangled_labware("cgap_heron", "CGAP Extraction")
         assert len(results) == 7
 
         for row in results:
@@ -170,7 +170,7 @@ def test_create_labwares(app, mocker):
 
 def test_update_wrangled(app):
     with app.app_context():
-        results = cgap_extraction.update_wrangled_labware(["RACK-1"])
+        results = cgap_extraction.update_wrangled_labware("cgap_heron", ["RACK-1"])
         assert results.rowcount == 3
 
         cursor = get_db()
@@ -200,7 +200,7 @@ def test_run(app, mocker):
             cgap_extraction.SSResponse("PLTE-1", {}, False),
         ]
 
-        cgap_extraction.run()
+        cgap_extraction.run(app)
 
         cgap_extraction.get_study_uuids.assert_called_with(set(["heron", "heron r and d"]))
         cgap_extraction.get_plate_purpose_uuid.assert_called_once
@@ -213,4 +213,4 @@ def test_run(app, mocker):
                 general_helpers.LabwareType.TUBE_RACK: "9999",
             },
         )
-        cgap_extraction.update_wrangled_labware.assert_called_once_with(["RACK-1"])
+        cgap_extraction.update_wrangled_labware.assert_called_once_with("cgap_heron", ["RACK-1"])
