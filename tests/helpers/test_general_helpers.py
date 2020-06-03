@@ -4,14 +4,26 @@ import responses
 from flask import current_app
 from pytest import raises
 
-from wrangler.constants import STATUS_VALIDATION_FAILED
-from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError, IndeterminableSampleTypeError
+from wrangler.constants import (
+    STATUS_VALIDATION_FAILED,
+    EXTRACT_TR_PURPOSE_96,
+    LYSATE_TR_PURPOSE,
+    EXTRACT_PLATE_PURPOSE,
+    LYSATE_PLATE_PURPOSE
+)
+from wrangler.exceptions import (
+    BarcodeNotFoundError,
+    IndeterminableLabwareError,
+    IndeterminableSampleTypeError,
+    IndeterminablePurposeError
+)
 from wrangler.helpers.general_helpers import (
     csv_file_exists,
     determine_labware_type,
     LabwareType,
     determine_sample_type,
     SampleType,
+    determine_purpose_name,
     error_request_body,
     get_entity_uuid,
     handle_error,
@@ -118,6 +130,31 @@ def test_determine_sample_type(app_db_less):
 
         with raises(IndeterminableSampleTypeError):
             determine_sample_type("blah", [{"sample_type": "stuff"}, {"sample_type": "primary"}])
+
+def test_determine_purpose_name(app_db_less):
+    with app_db_less.app_context():
+        assert (
+            determine_purpose_name("blah", LabwareType.TUBE_RACK, SampleType.EXTRACT)
+            == EXTRACT_TR_PURPOSE_96
+        )
+
+        assert (
+            determine_purpose_name("blah", LabwareType.TUBE_RACK, SampleType.LYSATE)
+            == LYSATE_TR_PURPOSE
+        )
+
+        assert (
+            determine_purpose_name("blah", LabwareType.PLATE, SampleType.EXTRACT)
+            == EXTRACT_PLATE_PURPOSE
+        )
+
+        assert (
+            determine_purpose_name("blah", LabwareType.PLATE, SampleType.LYSATE)
+            == LYSATE_PLATE_PURPOSE
+        )
+
+        with raises(IndeterminablePurposeError):
+            determine_purpose_name("blah", "stuff", "thing")
 
 def test_get_entity_uuid(app_db_less, mocked_responses):
     with app_db_less.app_context():
