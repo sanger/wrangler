@@ -1,3 +1,4 @@
+import logging
 from collections import namedtuple
 from http import HTTPStatus
 from itertools import groupby
@@ -11,10 +12,12 @@ from wrangler.constants import (
     STUDY_ENTITY,
     HERON_PLATE_PURPOSE,
 )
-from wrangler.db import get_db
+from wrangler.db import get_db, get_db_connection
 from wrangler.helpers.general_helpers import determine_labware_type, get_entity_uuid, LabwareType
 from wrangler.helpers.plate_helpers import create_plate, create_plate_body
 from wrangler.helpers.rack_helpers import create_tube_rack, create_tube_rack_body
+
+logger = logging.getLogger(__name__)
 
 SSResponse = namedtuple("SSResponse", "barcode body successful")
 
@@ -31,7 +34,7 @@ def run(app: Flask):
         None
     """
     with app.app_context():
-        app.logger.info("Starting cgap extraction job")
+        logger.info("Starting cgap extraction job")
         mlwh_rows = get_unwrangled_labware(
             app.config["MLWH_DB_TABLE"], app.config["CGAP_EXTRACTION_DESTINATION"]
         )
@@ -54,17 +57,20 @@ def run(app: Flask):
         )
 
         for successful, responses in groupby(ss_responses, lambda x: x.successful):
-            labware_barcodes = [x.barcode for x in responses]
+            response_list = list(responses)
+            labware_barcodes = [x.barcode for x in response_list]
 
             if successful:
                 update_wrangled_labware(app.config["MLWH_DB_TABLE"], labware_barcodes)
-                app.logger.info(
+                logger.info(
                     f"The following labware were successfully created: {','.join(labware_barcodes)}"
                 )
             else:
-                app.logger.error(
+                logger.error(
                     f"The following labware failed to be created: {','.join(labware_barcodes)}"
                 )
+                for response in response_list:
+                    logger.error(response.body)
 
 
 def get_unwrangled_labware(table: str, destination: str) -> List[Dict[str, str]]:
@@ -166,4 +172,5 @@ def update_wrangled_labware(table: str, container_barcodes: List[str]):
     )
     cursor = get_db()
     cursor.execute(query, tuple(container_barcodes))
+    get_db_connection().commit()
     return cursor
