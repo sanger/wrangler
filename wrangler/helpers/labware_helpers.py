@@ -20,6 +20,7 @@ from wrangler.helpers.general_helpers import (
     LabwareType,
     determine_sample_type,
     SampleType,
+    determine_purpose_name,
     get_entity_uuid,
 )
 from wrangler.helpers.plate_helpers import create_plate, create_plate_body
@@ -73,6 +74,9 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
         sample_type = determine_sample_type(labware_barcode, results)
         logger.info(f"Determined sample type: {sample_type}")
 
+        purpose_name = determine_purpose_name(labware_barcode, labware_type, sample_type)
+        logger.info(f"Determined purpose name: {purpose_name}")
+
         # Assuming study is the same for all wells/tubes in a container
         study_name = results[0]["study"]
         logger.info(f"Study name: {study_name}")
@@ -84,8 +88,6 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
                 validate_tubes(
                     labware_barcode, tubes_and_coordinates["layout"].keys(), db_tube_barcodes
                 )
-
-                purpose_name = EXTRACT_TR_PURPOSE_96 if sample_type == SampleType.EXTRACT else LYSATE_TR_PURPOSE
 
                 tube_rack_body = create_tube_rack_body(
                     labware_barcode,
@@ -99,8 +101,6 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
                 raise CsvNotFoundError(labware_barcode)
 
         if labware_type == LabwareType.PLATE:
-            purpose_name = EXTRACT_PLATE_PURPOSE if sample_type == SampleType.EXTRACT else LYSATE_PLATE_PURPOSE
-
             plate_body = create_plate_body(
                 labware_barcode,
                 results,

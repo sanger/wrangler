@@ -150,3 +150,27 @@ class IndeterminableSampleTypeError(Error):
             return f"{default_message} - {self.message}"
         else:
             return default_message
+
+class IndeterminablePurposeError(Error):
+    def __init__(self, labware_barcode: str, message: str = None):
+        """Raised when the purpose name cannot be determined from the sample type and labware type.
+
+        Arguments:
+            labware_barcode {str} -- barcode of the labware
+
+        Keyword Arguments:
+            message {str} -- extra message to add to the exception (default: {None})
+        """
+        self.message = message
+        self.labware_barcode = labware_barcode
+
+    def __str__(self):
+        default_message = (
+            f"IndeterminablePurposeError: [{self.labware_barcode}] Cannot determine the purpose that should "
+            "be used, from the sample type and labware type"
+        )
+
+        if self.message:
+            return f"{default_message} - {self.message}"
+        else:
+            return default_message

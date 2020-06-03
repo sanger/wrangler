@@ -7,8 +7,19 @@ from typing import Any, Dict, Tuple
 import requests
 from flask import current_app as app
 
-from wrangler.constants import STATUS_VALIDATION_FAILED
-from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError, IndeterminableSampleTypeError
+from wrangler.constants import (
+    STATUS_VALIDATION_FAILED,
+    EXTRACT_TR_PURPOSE_96,
+    LYSATE_TR_PURPOSE,
+    EXTRACT_PLATE_PURPOSE,
+    LYSATE_PLATE_PURPOSE
+)
+from wrangler.exceptions import (
+    BarcodeNotFoundError,
+    IndeterminableLabwareError,
+    IndeterminableSampleTypeError,
+    IndeterminablePurposeError
+)
 from wrangler.utils import pretty
 
 logger = logging.getLogger(__name__)
@@ -208,3 +219,24 @@ def determine_sample_type(labware_barcode, records) -> SampleType:
         return SampleType.LYSATE
 
     raise IndeterminableSampleTypeError(labware_barcode)
+
+def determine_purpose_name(labware_barcode: str, labware_type: LabwareType, sample_type: SampleType) -> str:
+    """Determine the plate or rack purpose name, from the sample type and labware type.
+
+    Arguments:
+        labware_type {LabwareType} -- enum representing plate or tube rack
+        sample_type {SampleType} -- enum representing lysate or extract
+
+    Raises:
+        IndeterminablePurposeError: when the purpose is not discernable
+
+    Returns:
+        str -- the purpose name
+    """
+    if labware_type == LabwareType.TUBE_RACK:
+        return EXTRACT_TR_PURPOSE_96 if sample_type == SampleType.EXTRACT else LYSATE_TR_PURPOSE
+
+    if  labware_type == LabwareType.PLATE:
+        return EXTRACT_PLATE_PURPOSE if sample_type == SampleType.EXTRACT else LYSATE_PLATE_PURPOSE
+
+    raise IndeterminablePurposeError(labware_barcode)
