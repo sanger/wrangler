@@ -9,13 +9,13 @@ from wrangler.constants import (
     EXTRACT_TR_PURPOSE_96,
     LYSATE_TR_PURPOSE,
     EXTRACT_PLATE_PURPOSE,
-    LYSATE_PLATE_PURPOSE
+    LYSATE_PLATE_PURPOSE,
 )
 from wrangler.exceptions import (
     BarcodeNotFoundError,
     IndeterminableLabwareError,
     IndeterminableSampleTypeError,
-    IndeterminablePurposeError
+    IndeterminablePurposeError,
 )
 from wrangler.helpers.general_helpers import (
     csv_file_exists,
@@ -111,10 +111,13 @@ def test_determine_labware_type(app_db_less):
         with raises(IndeterminableLabwareError):
             determine_labware_type("blah", [{"tube_barcode": None}, {"tube_barcode": "123"}])
 
+
 def test_determine_sample_type(app_db_less):
     with app_db_less.app_context():
         assert (
-            determine_sample_type("blah", [{"sample_state": "Extract"}, {"sample_state": "Extract"}])
+            determine_sample_type(
+                "blah", [{"sample_state": "Extract"}, {"sample_state": "Extract"}]
+            )
             == SampleType.EXTRACT
         )
 
@@ -125,6 +128,7 @@ def test_determine_sample_type(app_db_less):
 
         with raises(IndeterminableSampleTypeError):
             determine_sample_type("blah", [{"sample_state": "stuff"}, {"sample_state": "stuff"}])
+
 
 def test_determine_purpose_name(app_db_less):
     with app_db_less.app_context():
@@ -150,6 +154,7 @@ def test_determine_purpose_name(app_db_less):
 
         with raises(IndeterminablePurposeError):
             determine_purpose_name("blah", "stuff", "thing")
+
 
 def test_get_entity_uuid(app_db_less, mocked_responses):
     with app_db_less.app_context():

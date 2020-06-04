@@ -7,7 +7,7 @@ from wrangler.exceptions import (
     TubesCountError,
     IndeterminableLabwareError,
     IndeterminableSampleTypeError,
-    IndeterminablePurposeError
+    IndeterminablePurposeError,
 )
 
 
@@ -30,13 +30,16 @@ def test_TubesCountError():
     with pytest.raises(TubesCountError, match=r".*\[DN123\].*"):
         raise TubesCountError("DN123")
 
+
 def test_IndeterminableLabwareError():
     with pytest.raises(IndeterminableLabwareError, match=r".*\[DN123\].*"):
         raise IndeterminableLabwareError("DN123")
 
+
 def test_IndeterminableSampleTypeError():
     with pytest.raises(IndeterminableSampleTypeError, match=r".*\[DN123\].*"):
         raise IndeterminableSampleTypeError("DN123")
+
 
 def test_IndeterminablePurposeError():
     with pytest.raises(IndeterminablePurposeError, match=r".*\[DN123\].*"):

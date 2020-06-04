@@ -10,7 +10,7 @@ from wrangler.constants import (
     EXTRACT_PLATE_PURPOSE,
     EXTRACT_TR_PURPOSE_96,
     LYSATE_PLATE_PURPOSE,
-    LYSATE_TR_PURPOSE
+    LYSATE_TR_PURPOSE,
 )
 from wrangler.db import get_db
 from wrangler.exceptions import BarcodeNotFoundError, CsvNotFoundError

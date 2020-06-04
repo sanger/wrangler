@@ -12,13 +12,13 @@ from wrangler.constants import (
     EXTRACT_TR_PURPOSE_96,
     LYSATE_TR_PURPOSE,
     EXTRACT_PLATE_PURPOSE,
-    LYSATE_PLATE_PURPOSE
+    LYSATE_PLATE_PURPOSE,
 )
 from wrangler.exceptions import (
     BarcodeNotFoundError,
     IndeterminableLabwareError,
     IndeterminableSampleTypeError,
-    IndeterminablePurposeError
+    IndeterminablePurposeError,
 )
 from wrangler.utils import pretty
 
@@ -169,6 +169,7 @@ class LabwareType(Enum):
     TUBE_RACK = 1
     PLATE = 2
 
+
 class SampleType(Enum):
     EXTRACT = 1
     LYSATE = 2
@@ -198,6 +199,7 @@ def determine_labware_type(labware_barcode: str, records: List[Dict[str, str]]) 
 
     raise IndeterminableLabwareError(labware_barcode)
 
+
 def determine_sample_type(labware_barcode: str, records: List[Dict[str, str]]) -> SampleType:
     """Determine the type of sample (whether extract or lysed) in the MLWH table by inspecting the records.
 
@@ -222,7 +224,10 @@ def determine_sample_type(labware_barcode: str, records: List[Dict[str, str]]) -
 
     raise IndeterminableSampleTypeError(labware_barcode)
 
-def determine_purpose_name(labware_barcode: str, labware_type: LabwareType, sample_type: SampleType) -> str:
+
+def determine_purpose_name(
+    labware_barcode: str, labware_type: LabwareType, sample_type: SampleType
+) -> str:
     """Determine the plate or rack purpose name, from the sample type and labware type.
 
     Arguments:
@@ -239,7 +244,7 @@ def determine_purpose_name(labware_barcode: str, labware_type: LabwareType, samp
     if labware_type == LabwareType.TUBE_RACK:
         return EXTRACT_TR_PURPOSE_96 if sample_type == SampleType.EXTRACT else LYSATE_TR_PURPOSE
 
-    if  labware_type == LabwareType.PLATE:
+    if labware_type == LabwareType.PLATE:
         return EXTRACT_PLATE_PURPOSE if sample_type == SampleType.EXTRACT else LYSATE_PLATE_PURPOSE
 
     raise IndeterminablePurposeError(labware_barcode)

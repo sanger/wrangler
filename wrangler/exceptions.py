@@ -127,6 +127,7 @@ class IndeterminableLabwareError(Error):
         else:
             return default_message
 
+
 class IndeterminableSampleTypeError(Error):
     def __init__(self, labware_barcode: str, message: str = None):
         """Raised when the sample type is indeterminable from the data stored in the MLWH table.
@@ -150,6 +151,7 @@ class IndeterminableSampleTypeError(Error):
             return f"{default_message} - {self.message}"
         else:
             return default_message
+
 
 class IndeterminablePurposeError(Error):
     def __init__(self, labware_barcode: str, message: str = None):
