@@ -9,7 +9,7 @@ from wrangler.constants import (
     LYSATE_PLATE_PURPOSE,
     LYSATE_TR_PURPOSE,
 )
-from wrangler.db import get_db
+from wrangler.db import get_db, get_db_connection
 
 
 def test_get_unwrangled_labware(app):
@@ -180,6 +180,10 @@ def test_update_wrangled(app):
 
         for row in cursor:
             assert type(row["wrangled"]) is datetime
+
+        # Reset the wrangled column
+        cursor.execute("UPDATE cgap_heron SET wrangled = null WHERE container_barcode = 'RACK-1'")
+        get_db_connection().commit()
 
 
 def test_run(app, mocker):
