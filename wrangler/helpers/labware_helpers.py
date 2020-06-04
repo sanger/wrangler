@@ -6,11 +6,9 @@ from flask import current_app as app
 
 from wrangler.constants import (
     PLATE_PURPOSE_ENTITY,
+    STOCK_PLATE_PURPOSE,
     STUDY_ENTITY,
-    EXTRACT_PLATE_PURPOSE,
-    EXTRACT_TR_PURPOSE_96,
-    LYSATE_PLATE_PURPOSE,
-    LYSATE_TR_PURPOSE
+    STOCK_TR_PURPOSE_96,
 )
 from wrangler.db import get_db
 from wrangler.exceptions import BarcodeNotFoundError, CsvNotFoundError
@@ -18,9 +16,6 @@ from wrangler.helpers.general_helpers import (
     csv_file_exists,
     determine_labware_type,
     LabwareType,
-    determine_sample_type,
-    SampleType,
-    determine_purpose_name,
     get_entity_uuid,
 )
 from wrangler.helpers.plate_helpers import create_plate, create_plate_body
@@ -71,12 +66,6 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
         labware_type = determine_labware_type(labware_barcode, results)
         logger.info(f"Determined labware type: {labware_type}")
 
-        sample_type = determine_sample_type(labware_barcode, results)
-        logger.info(f"Determined sample type: {sample_type}")
-
-        purpose_name = determine_purpose_name(labware_barcode, labware_type, sample_type)
-        logger.info(f"Determined purpose name: {purpose_name}")
-
         # Assuming study is the same for all wells/tubes in a container
         study_name = results[0]["study"]
         logger.info(f"Study name: {study_name}")
@@ -92,7 +81,7 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
                 tube_rack_body = create_tube_rack_body(
                     labware_barcode,
                     results,
-                    purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, purpose_name),
+                    purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, STOCK_TR_PURPOSE_96),
                     study_uuid=get_entity_uuid(STUDY_ENTITY, study_name),
                 )
 
@@ -104,7 +93,7 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
             plate_body = create_plate_body(
                 labware_barcode,
                 results,
-                purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, purpose_name),
+                purpose_uuid=get_entity_uuid(PLATE_PURPOSE_ENTITY, STOCK_PLATE_PURPOSE),
                 study_uuid=get_entity_uuid(STUDY_ENTITY, study_name),
             )
             return create_plate(plate_body)
