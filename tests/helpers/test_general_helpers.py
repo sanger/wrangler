@@ -114,12 +114,12 @@ def test_determine_labware_type(app_db_less):
 def test_determine_sample_type(app_db_less):
     with app_db_less.app_context():
         assert (
-            determine_sample_type("blah", [{"sample_state": "extract"}, {"sample_state": "extract"}])
+            determine_sample_type("blah", [{"sample_state": "Extract"}, {"sample_state": "Extract"}])
             == SampleType.EXTRACT
         )
 
         assert (
-            determine_sample_type("blah", [{"sample_state": "lysate"}, {"sample_state": "lysate"}])
+            determine_sample_type("blah", [{"sample_state": "Lysate"}, {"sample_state": "Lysate"}])
             == SampleType.LYSATE
         )
 

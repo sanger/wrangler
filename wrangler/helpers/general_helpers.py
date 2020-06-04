@@ -212,10 +212,10 @@ def determine_sample_type(labware_barcode, records) -> SampleType:
     # Assuming sample_type will be the same for all wells/tubes within a container
     sample_type = records[0]["sample_state"]
 
-    if sample_type == "extract":
+    if sample_type == "Extract":
         return SampleType.EXTRACT
 
-    if sample_type == "lysate":
+    if sample_type == "Lysate":
         return SampleType.LYSATE
 
     raise IndeterminableSampleTypeError(labware_barcode)

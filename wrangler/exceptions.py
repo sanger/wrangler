@@ -143,7 +143,7 @@ class IndeterminableSampleTypeError(Error):
     def __str__(self):
         default_message = (
             f"IndeterminableSampleTypeError: [{self.labware_barcode}] Cannot determine the type of "
-            "sample (e.g. 'lysate') from the records in the MLWH"
+            "sample (e.g. 'Lysate') from the records in the MLWH"
         )
 
         if self.message:
