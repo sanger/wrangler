@@ -114,22 +114,17 @@ def test_determine_labware_type(app_db_less):
 def test_determine_sample_type(app_db_less):
     with app_db_less.app_context():
         assert (
-            determine_sample_type("blah", [{"sample_type": "extract"}, {"sample_type": "extract"}])
+            determine_sample_type("blah", [{"sample_state": "extract"}, {"sample_state": "extract"}])
             == SampleType.EXTRACT
         )
 
         assert (
-            determine_sample_type("blah", [{"sample_type": "lysate"}, {"sample_type": "lysate"}])
-            == SampleType.LYSATE
-        )
-
-        assert (
-            determine_sample_type("blah", [{"sample_type": "primary"}, {"sample_type": "primary"}])
+            determine_sample_type("blah", [{"sample_state": "lysate"}, {"sample_state": "lysate"}])
             == SampleType.LYSATE
         )
 
         with raises(IndeterminableSampleTypeError):
-            determine_sample_type("blah", [{"sample_type": "stuff"}, {"sample_type": "primary"}])
+            determine_sample_type("blah", [{"sample_state": "stuff"}, {"sample_state": "stuff"}])
 
 def test_determine_purpose_name(app_db_less):
     with app_db_less.app_context():
