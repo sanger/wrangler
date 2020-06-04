@@ -8,9 +8,9 @@ from flask import Flask
 
 from wrangler.constants import (
     PLATE_PURPOSE_ENTITY,
-    LYSATE_TR_PURPOSE,
+    HERON_TR_PURPOSE,
     STUDY_ENTITY,
-    LYSATE_PLATE_PURPOSE,
+    HERON_PLATE_PURPOSE,
 )
 from wrangler.db import get_db, get_db_connection
 from wrangler.helpers.general_helpers import determine_labware_type, get_entity_uuid, LabwareType
@@ -29,7 +29,7 @@ def run(app: Flask):
         - Looks up required study and plate purpose UUIDs
         - Creates the labware
         - Marks the created labware as "wrangled" in the mlwh
-
+    
     Returns:
         None
     """
@@ -106,11 +106,11 @@ def get_study_uuids(studies: Iterable[str]) -> Dict[str, str]:
 
 
 def get_plate_purpose_uuid() -> str:
-    return get_entity_uuid(PLATE_PURPOSE_ENTITY, LYSATE_PLATE_PURPOSE)
+    return get_entity_uuid(PLATE_PURPOSE_ENTITY, HERON_PLATE_PURPOSE)
 
 
 def get_tube_rack_purpose_uuid() -> str:
-    return get_entity_uuid(PLATE_PURPOSE_ENTITY, LYSATE_TR_PURPOSE)
+    return get_entity_uuid(PLATE_PURPOSE_ENTITY, HERON_TR_PURPOSE)
 
 
 def create_labwares(mlwh_rows, **kwargs) -> Generator:
