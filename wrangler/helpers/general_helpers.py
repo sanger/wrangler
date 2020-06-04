@@ -3,6 +3,7 @@ from enum import Enum
 from http import HTTPStatus
 from os.path import getsize, isfile, join
 from typing import Any, Dict, Tuple
+from urllib.parse import urlencode
 
 import requests
 from flask import current_app as app
@@ -85,7 +86,9 @@ def get_entity_uuid(entity: str, entity_name: str) -> str:
     """
     logger.info(f"Getting UUID for '{entity}' - '{entity_name}'")
 
-    url = f"http://{app.config['SS_HOST']}/api/v2/{entity}?filter[name]={entity_name}"
+    url = (
+        f"http://{app.config['SS_HOST']}/api/v2/{entity}?{urlencode({'filter[name]': entity_name})}"
+    )
 
     logger.debug(f"Sending GET to {url}")
 

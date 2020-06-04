@@ -116,3 +116,22 @@ def test_get_entity_uuid(app_db_less, mocked_responses):
         )
 
         assert get_entity_uuid(entity, entity_name) == uuid
+
+
+def test_get_entity_uuid_with_ampersand(app_db_less, mocked_responses):
+    with app_db_less.app_context():
+        entity = "studies"
+        entity_name = "Heron Project R & D"
+        uuid = "12345"
+
+        # What the URL should look like after being encoded
+        ss_url = f"http://{current_app.config['SS_HOST']}/api/v2/studies?filter%5Bname%5D=Heron+Project+R+%26+D"
+
+        mocked_responses.add(
+            responses.GET,
+            ss_url,
+            body=f'{{"data": [{{"attributes": {{"uuid": "{uuid}"}}}}]}}',
+            status=HTTPStatus.OK,
+        )
+
+        assert get_entity_uuid(entity, entity_name) == uuid
