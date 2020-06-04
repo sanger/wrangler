@@ -1,6 +1,7 @@
 import logging
 import logging.config
 
+from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore
 from flask import Flask
 
 logger = logging.getLogger(__name__)
@@ -25,10 +26,12 @@ def create_app(test_config_path: str = None):
     db.init_app(app)
 
     if app.config.get("ENABLE_SCHEDULER", False):
-        from wrangler.jobs import init_scheduler, cgap_extraction
+        from wrangler.jobs import cgap_extraction
 
-        scheduler = init_scheduler(app)
-        scheduler.add_job(cgap_extraction.run, "interval", minutes=2)
+        app.logger.info("Starting scheduler...")
+        scheduler = BackgroundScheduler()
+        scheduler.start()
+        scheduler.add_job(cgap_extraction.run, "interval", args=(app,), minutes=2)
 
     from wrangler.blueprints import racks
     from wrangler.blueprints import labware
