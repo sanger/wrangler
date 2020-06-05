@@ -4,11 +4,26 @@ import responses
 from flask import current_app
 from pytest import raises
 
-from wrangler.constants import PLATE, STATUS_VALIDATION_FAILED, TUBE_RACK
-from wrangler.exceptions import BarcodeNotFoundError, IndeterminableLabwareError
+from wrangler.constants import (
+    STATUS_VALIDATION_FAILED,
+    EXTRACT_TR_PURPOSE_96,
+    LYSATE_TR_PURPOSE,
+    EXTRACT_PLATE_PURPOSE,
+    LYSATE_PLATE_PURPOSE,
+)
+from wrangler.exceptions import (
+    BarcodeNotFoundError,
+    IndeterminableLabwareError,
+    IndeterminableSampleTypeError,
+    IndeterminablePurposeError,
+)
 from wrangler.helpers.general_helpers import (
     csv_file_exists,
     determine_labware_type,
+    LabwareType,
+    determine_sample_type,
+    SampleType,
+    determine_purpose_name,
     error_request_body,
     get_entity_uuid,
     handle_error,
@@ -85,16 +100,60 @@ def test_determine_labware_type(app_db_less):
     with app_db_less.app_context():
         assert (
             determine_labware_type("blah", [{"tube_barcode": "123"}, {"tube_barcode": "456"}])
-            == TUBE_RACK
+            == LabwareType.TUBE_RACK
         )
 
         assert (
             determine_labware_type("blah", [{"tube_barcode": None}, {"tube_barcode": None}])
-            == PLATE
+            == LabwareType.PLATE
         )
 
         with raises(IndeterminableLabwareError):
             determine_labware_type("blah", [{"tube_barcode": None}, {"tube_barcode": "123"}])
+
+
+def test_determine_sample_type(app_db_less):
+    with app_db_less.app_context():
+        assert (
+            determine_sample_type(
+                "blah", [{"sample_state": "Extract"}, {"sample_state": "Extract"}]
+            )
+            == SampleType.EXTRACT
+        )
+
+        assert (
+            determine_sample_type("blah", [{"sample_state": "Lysate"}, {"sample_state": "Lysate"}])
+            == SampleType.LYSATE
+        )
+
+        with raises(IndeterminableSampleTypeError):
+            determine_sample_type("blah", [{"sample_state": "stuff"}, {"sample_state": "stuff"}])
+
+
+def test_determine_purpose_name(app_db_less):
+    with app_db_less.app_context():
+        assert (
+            determine_purpose_name("blah", LabwareType.TUBE_RACK, SampleType.EXTRACT)
+            == EXTRACT_TR_PURPOSE_96
+        )
+
+        assert (
+            determine_purpose_name("blah", LabwareType.TUBE_RACK, SampleType.LYSATE)
+            == LYSATE_TR_PURPOSE
+        )
+
+        assert (
+            determine_purpose_name("blah", LabwareType.PLATE, SampleType.EXTRACT)
+            == EXTRACT_PLATE_PURPOSE
+        )
+
+        assert (
+            determine_purpose_name("blah", LabwareType.PLATE, SampleType.LYSATE)
+            == LYSATE_PLATE_PURPOSE
+        )
+
+        with raises(IndeterminablePurposeError):
+            determine_purpose_name("blah", "stuff", "thing")
 
 
 def test_get_entity_uuid(app_db_less, mocked_responses):
@@ -106,6 +165,25 @@ def test_get_entity_uuid(app_db_less, mocked_responses):
         ss_url = (
             f"http://{current_app.config['SS_HOST']}/api/v2/{entity}?filter[name]={entity_name}"
         )
+
+        mocked_responses.add(
+            responses.GET,
+            ss_url,
+            body=f'{{"data": [{{"attributes": {{"uuid": "{uuid}"}}}}]}}',
+            status=HTTPStatus.OK,
+        )
+
+        assert get_entity_uuid(entity, entity_name) == uuid
+
+
+def test_get_entity_uuid_with_ampersand(app_db_less, mocked_responses):
+    with app_db_less.app_context():
+        entity = "studies"
+        entity_name = "Heron Project R & D"
+        uuid = "12345"
+
+        # What the URL should look like after being encoded
+        ss_url = f"http://{current_app.config['SS_HOST']}/api/v2/studies?filter%5Bname%5D=Heron+Project+R+%26+D"
 
         mocked_responses.add(
             responses.GET,

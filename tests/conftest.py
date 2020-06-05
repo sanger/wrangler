@@ -7,9 +7,7 @@ from wrangler.constants import (
     STUDY_ENTITY,
     STUDY_HERON,
     PLATE_PURPOSE_ENTITY,
-    PLATE_PURPOSE_STOCK,
-    RACK_PURPOSE_48,
-    RACK_PURPOSE_96,
+    EXTRACT_TR_PURPOSE_96,
 )
 from http import HTTPStatus
 
@@ -59,7 +57,7 @@ def mocked_ss_calls_for_96_rack(app, mocked_responses):
     mock_ss_path_with_uuid(
         app,
         mocked_responses,
-        f"/api/v2/{PLATE_PURPOSE_ENTITY}?filter[name]={RACK_PURPOSE_96}",
+        f"/api/v2/{PLATE_PURPOSE_ENTITY}?filter[name]={EXTRACT_TR_PURPOSE_96}",
         "purpose_rack_96_uuid",
     )
     yield mocked_responses
@@ -76,7 +74,7 @@ def mocked_ss_calls_with_study_and_rack_96_purpose(app, mocked_responses):
     mock_ss_path_with_uuid(
         app,
         mocked_responses,
-        f"/api/v2/{PLATE_PURPOSE_ENTITY}?filter[name]={RACK_PURPOSE_96}",
+        f"/api/v2/{PLATE_PURPOSE_ENTITY}?filter[name]={EXTRACT_TR_PURPOSE_96}",
         "purpose_rack_96_uuid",
     )
     yield mocked_responses
