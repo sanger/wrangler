@@ -60,12 +60,15 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
         f"WHERE container_barcode = '{labware_barcode}'"
     )
 
+    print("the db table:")
+    print(app.config['MLWH_DB_TABLE'])
+
     logger.debug(f"Number of records found: {cursor.rowcount}")
 
     # if there is data in the MLWH, determine what type of labware it is
     if cursor.rowcount > 0:
-        results = list(cursor)
 
+        results = list(cursor)
         pretty(logger, results)
 
         labware_type = determine_labware_type(labware_barcode, results)

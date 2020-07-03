@@ -15,7 +15,7 @@ def create_plate_body(
     wells_content = {}
     for sample in mlwh_results:
         wells_content[sample["position"]] = {
-            "content": sample_contents_for(sample["supplier_sample_id"])
+            "content": sample_contents_for(sample)
         }
 
     body = {

@@ -2,6 +2,7 @@ from wrangler.helpers.sample_helpers import (
     add_control_sample_if_present,
     control_for,
     control_type_for,
+    sample_contents_for
 )
 
 
@@ -40,3 +41,7 @@ def test_not_set_control_sample_if_not_present():
     record = {"supplier_name": "is a very positive sample"}
     add_control_sample_if_present(record)
     assert not "control" in record
+
+def test_priority_is_in_sample_contents():
+    record = {"position": "A01", "tube_barcode": "TB123", "supplier_sample_id": "xyz123", "priority": "1"}
+    assert sample_contents_for(record) == {"supplier_name": "xyz123","priority": "1"}

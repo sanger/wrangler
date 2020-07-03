@@ -10,5 +10,6 @@ CREATE TABLE `{{ database }}`.`cgap_heron` (
     `study` VARCHAR(32) NOT NULL,
     `destination` VARCHAR(32) NOT NULL,
     `wrangled` TIMESTAMP NULL,
+    `priority` TINYINT(4) NULL,
     PRIMARY KEY (`id`)
 )  ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=LATIN1;

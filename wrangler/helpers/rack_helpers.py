@@ -92,7 +92,7 @@ def create_tube_rack_body(
     for row in mlwh_results:
         tubes[row["position"]] = {
             "barcode": row["tube_barcode"],
-            "content": sample_contents_for(row["supplier_sample_id"]),
+            "content": sample_contents_for(row),
         }
 
     tube_rack_attributes = {
