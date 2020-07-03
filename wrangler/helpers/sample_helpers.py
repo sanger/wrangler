@@ -4,7 +4,6 @@ from typing import Dict, Any
 
 
 def sample_contents_for(row: Dict[str, Any]):
-    # return add_control_sample_if_present({"supplier_name": row["supplier_sample_id"], "priority": row.get("priority", 0) } )
     return add_control_sample_if_present({"supplier_name": row["supplier_sample_id"], "priority": row["priority"] } )
 
 
