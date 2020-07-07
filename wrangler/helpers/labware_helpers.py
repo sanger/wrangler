@@ -64,8 +64,8 @@ def wrangle_labware(labware_barcode: str) -> Tuple[Dict[str, str], int]:
 
     # if there is data in the MLWH, determine what type of labware it is
     if cursor.rowcount > 0:
-        results = list(cursor)
 
+        results = list(cursor)
         pretty(logger, results)
 
         labware_type = determine_labware_type(labware_barcode, results)

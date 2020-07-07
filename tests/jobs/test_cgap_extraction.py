@@ -95,24 +95,28 @@ def test_create_labwares(app, mocker):
                 "tube_barcode": "tb1",
                 "study": "heron",
                 "supplier_sample_id": "SSID1",
+                "priority": 1,
             },
             {
                 "container_barcode": "RACK-1",
                 "tube_barcode": "tb2",
                 "study": "heron",
                 "supplier_sample_id": "SSID2",
+                "priority": 1,
             },
             {
                 "container_barcode": "RACK-1",
                 "tube_barcode": "tb3",
                 "study": "heron",
                 "supplier_sample_id": "SSID3",
+                "priority": 1,
             },
             {
                 "container_barcode": "RACK-1",
                 "tube_barcode": "tb4",
                 "study": "heron",
                 "supplier_sample_id": "SSID4",
+                "priority": 1,
             },
         ]
 
@@ -122,18 +126,21 @@ def test_create_labwares(app, mocker):
                 "tube_barcode": None,
                 "study": "heron r and d",
                 "supplier_sample_id": "SSID5",
+                "priority": 1,
             },
             {
                 "container_barcode": "PLTE-1",
                 "tube_barcode": None,
                 "study": "heron r and d",
                 "supplier_sample_id": "SSID6",
+                "priority": 1,
             },
             {
                 "container_barcode": "PLTE-1",
                 "tube_barcode": None,
                 "study": "heron r and d",
                 "supplier_sample_id": "SSID7",
+                "priority": 1,
             },
         ]
 

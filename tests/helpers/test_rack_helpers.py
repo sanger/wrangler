@@ -104,8 +104,8 @@ def test_parse_tube_rack_csv_ignores_no_read(app_db_less, client, tmpdir):
 
 def test_create_tube_rack_body():
     mlwh_results = [
-        {"position": "A01", "tube_barcode": "TB123", "supplier_sample_id": "xyz123"},
-        {"position": "A02", "tube_barcode": "TB456", "supplier_sample_id": "xyz456"},
+        {"position": "A01", "tube_barcode": "TB123", "supplier_sample_id": "xyz123", "priority": "1"},
+        {"position": "A02", "tube_barcode": "TB456", "supplier_sample_id": "xyz456", "priority": "2"},
     ]
     tube_rack_barcode = "DN123"
     tube_rack_attributes = {
@@ -113,8 +113,8 @@ def test_create_tube_rack_body():
         "purpose_uuid": "1234",
         "study_uuid": "5678",
         "tubes": {
-            "A01": {"barcode": "TB123", "content": {"supplier_name": "xyz123",},},
-            "A02": {"barcode": "TB456", "content": {"supplier_name": "xyz456",},},
+            "A01": {"barcode": "TB123", "content": {"supplier_name": "xyz123","priority": "1"},},
+            "A02": {"barcode": "TB456", "content": {"supplier_name": "xyz456","priority": "2"},},
         },
     }
     body = {"data": {"attributes": tube_rack_attributes}}
