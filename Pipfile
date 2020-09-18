@@ -22,7 +22,7 @@ gunicorn = "~=20.0"
 mysql-connector-python = "~=8.0"
 requests = "~=2.23"
 colorlog = "~=4.1"
-slackclient = "~=2.6"
+slackclient = "~=2.9"
 apscheduler = "~=3.6"
 
 [requires]
