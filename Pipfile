@@ -17,7 +17,7 @@ pytest-mock = "*"
 
 [packages]
 flask = "~=1.1"
-python-dotenv = "~=0.12"
+python-dotenv = "~=0.15"
 gunicorn = "~=20.0"
 mysql-connector-python = "~=8.0"
 requests = "~=2.23"
