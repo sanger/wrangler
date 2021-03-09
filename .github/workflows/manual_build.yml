@@ -1,12 +1,8 @@
-name: CI docker
+name: Manual build
 
 on:
-  push:
-    branches:
-      - develop
-      - master
-    paths-ignore:
-      - "README.md"
+  release:
+    types: published
 
 env:
   IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
