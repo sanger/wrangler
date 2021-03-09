@@ -70,7 +70,7 @@ jobs:
           -u ${{ github.actor }}
           -p ${{ secrets.GITHUB_TOKEN }}
           docker.pkg.github.com
-      - name: Publish image with image tag being either develop/master/<tag_name>
+      - name: Publish image with image tag being either release-x.y.z_develop or release-x.y.z
         run: >-
           docker push
           docker.pkg.github.com/${IMAGE_NAME}:${{ env.RELEASE_TAG }}
