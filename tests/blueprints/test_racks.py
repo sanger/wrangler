@@ -13,8 +13,7 @@ def test_barcode_not_found(client):
 
 
 def test_invalid_tube_rack_file(client):
-    """This tests that despite the barcode being valid, the tube rack file might be invalid.
-    """
+    """This tests that despite the barcode being valid, the tube rack file might be invalid."""
     response = client.get(f"{TUBE_RACK_URL}/DN_invalid")
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 

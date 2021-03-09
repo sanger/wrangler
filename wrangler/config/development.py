@@ -1,14 +1,11 @@
-from wrangler.config.defaults import *  # noqa: F403,F401
+# flake8: noqa
+from wrangler.config.defaults import *
 
 # settings here overwrite those in 'defaults.py'
-ENABLE_SCHEDULER = True
-# MLWH details
-MLWH_DB_HOST = "127.0.0.1"
 
 # tube rack CSV details
 TUBE_RACK_DIR = "tests/files"
 
-
 # logging config
-LOGGING["loggers"]["wrangler"]["level"] = "DEBUG"  # noqa: F405
-LOGGING["loggers"]["wrangler"]["handlers"] = ["colored_stream"]  # noqa: F405
+LOGGING["loggers"]["wrangler"]["level"] = "DEBUG"
+LOGGING["loggers"]["wrangler"]["handlers"] = ["colored_stream"]
