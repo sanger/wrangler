@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 # tube rack CSV directory
-TUBE_RACK_DIR = "/Users/pj5/dev/psd/wrangler/tests/csvs"
+TUBE_RACK_DIR = "tests/files"
 
 # slack details
 SLACK_API_TOKEN = ""

@@ -5,40 +5,20 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/gh/sanger/wrangler/branch/develop/graph/badge.svg)](https://codecov.io/gh/sanger/wrangler)
 
-A micro service to create labware in Sequencescape based on data stored in CSV files and databases.
-Currently, the two main features are:
-
-* lookup and parse a CSV file named after a tube rack barcode provided, return the data in the CSV
+A micro service to lookup and parse a CSV file named after a tube rack barcode provided and return the data in the CSV
 if found
-* determine if a provided barcode is a plate or a tube rack and create the entity in Sequencescape
 
 The routes of the service are:
 
     Endpoint                           Methods  Rule
-    ---------------------------------  -------  ------------------------------
-    labware.wrangle                    POST     /wrangle/<labware_barcode>
-    racks.get_tubes_from_rack_barcode  GET      /tube_rack/<tube_rack_barcode>
-    static                             GET      /static/<path:filename>
-
-The service uses a scheduled job to periodically query the multi-LIMS warehouse (MLWH) cgap_heron table for rows with a
-destination of "CGAP Extraction" that haven't yet been wrangled (i.e. the wrangled column is `null`). It will create
-each plate or tube rack in Sequencescape, and subsequently mark the rows in the MLWH as wrangled (i.e. wrangled will be
-updated with a timestamp).
-
-Plates and tube racks created within this scheduled job will have the following plate purposes (set in the
-`constants.py` file):
-
-- Plate: `Heron Lysed Plate`
-- Tube Rack: `Heron Lysed Tube Rack`
-
-This scheduled job can be enabled or disabled by setting the `ENABLE_SCHEDULER` config variable to `True` or `False`
-respectively.
+        ---------------------------------  -------  ------------------------------
+        racks.get_tubes_from_rack_barcode  GET      /tube_rack/<tube_rack_barcode>
+        static                             GET      /static/<path:filename>
 
 ## Requirements
 
 * [pyenv](https://github.com/pyenv/pyenv)
 * [pipenv](https://pipenv.pypa.io/en/latest/)
-* mySQL
 
 ## Setup
 
@@ -72,11 +52,6 @@ __NB:__ When adding or changing environmental variables, remember to exit and re
 environment.
 
 ## Testing
-
-1. Verify the credentials for your database in the settings file 'config/test.py'
-1. Create the test database and table and insert test data (found in 'sql/test_data'):
-
-        SETTINGS_PATH=config/test.py flask init-db
 
 1. Run the tests using pytest (flags are for verbose, exit early and capture output):
 
