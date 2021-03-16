@@ -1,28 +1,7 @@
 from typing import Any, Dict
 
-# MLWH details
-MLWH_DB_DBNAME = "mlwarehouse_dev"
-MLWH_DB_HOST = "localhost"
-MLWH_DB_PASSWORD = "root"
-MLWH_DB_PORT = "3306"
-MLWH_DB_TABLE = "cgap_heron"
-MLWH_DB_USER = "root"
-
-# Sequencescape details
-SS_API_KEY = "123"
-SS_HOST = "localhost:3000"
-SS_TUBE_RACK_ENDPOINT = "/api/v2/heron/tube_racks"
-SS_PLATE_ENDPOINT = "/api/v2/heron/plates"
-SS_TUBE_RACK_STATUS_ENDPOINT = "/api/v2/heron/tube_rack_statuses"
-
 # tube rack CSV directory
-TUBE_RACK_DIR = "/Users/pj5/dev/psd/wrangler/tests/csvs"
-
-# Scheduler
-ENABLE_SCHEDULER = True
-
-# CGaP
-CGAP_EXTRACTION_DESTINATION = "CGAP Extraction"
+TUBE_RACK_DIR = "tests/files"
 
 # slack details
 SLACK_API_TOKEN = ""
