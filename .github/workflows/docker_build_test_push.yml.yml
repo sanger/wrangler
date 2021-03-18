@@ -1,14 +1,19 @@
-name: Manual build
+name: Docker - build, test and push
 
 on:
-  release:
-    types: published
+  pull_request:
+    branches:
+      - develop
+      - master
+  push:
+    tags:
+      - v*
 
 env:
   IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
 
 jobs:
-  build_and_test_job:
+  build_test_push:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
