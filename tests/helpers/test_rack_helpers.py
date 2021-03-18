@@ -1,35 +1,9 @@
 from pytest import raises
-
-from wrangler.exceptions import BarcodesMismatchError, TubesCountError
-from wrangler.helpers.rack_helpers import parse_tube_rack_csv, validate_tubes, create_tube_rack_body
+from wrangler.helpers.rack_helpers import parse_tube_rack_csv
 
 
-def test_validate_tubes_different_barcodes():
-    with raises(BarcodesMismatchError):
-        validate_tubes("blah", ["T1", "T2"], ["T2", "T3"])
-
-
-def test_validate_tubes_more_in_layout():
-    with raises(TubesCountError):
-        validate_tubes("blah", ["T1", "T2"], ["T2"])
-
-
-def test_validate_tubes_less_in_layout():
-    with raises(TubesCountError):
-        validate_tubes("blah", ["T1"], ["T1", "T2"])
-
-
-def test_validate_tubes_duplication():
-    with raises(BarcodesMismatchError):
-        validate_tubes("blah", ["T1", "T1"], ["T1", "T2"])
-
-
-def test_validate_tubes_different_order():
-    assert validate_tubes("blah", ["T1", "T2"], ["T2", "T1"])
-
-
-def test_parse_tube_rack_csv(app_db_less):
-    with app_db_less.app_context():
+def test_parse_tube_rack_csv(app):
+    with app.app_context():
         rack_size, tube_dict = parse_tube_rack_csv("DN_48_valid")
         assert rack_size == 48
         assert tube_dict == {
@@ -90,8 +64,8 @@ def test_parse_tube_rack_csv(app_db_less):
             parse_tube_rack_csv("blah")
 
 
-def test_parse_tube_rack_csv_ignores_no_read(app_db_less, client, tmpdir):
-    with app_db_less.app_context():
+def test_parse_tube_rack_csv_ignores_no_read(app, client, tmpdir):
+    with app.app_context():
 
         expected_output = {
             "rack_barcode": "DN_48_no_read",
@@ -100,23 +74,3 @@ def test_parse_tube_rack_csv_ignores_no_read(app_db_less, client, tmpdir):
         rack_size, tube_dict = parse_tube_rack_csv("DN_48_no_read")
         assert rack_size == 48
         assert tube_dict == expected_output
-
-
-def test_create_tube_rack_body():
-    mlwh_results = [
-        {"position": "A01", "tube_barcode": "TB123", "supplier_sample_id": "xyz123"},
-        {"position": "A02", "tube_barcode": "TB456", "supplier_sample_id": "xyz456"},
-    ]
-    tube_rack_barcode = "DN123"
-    tube_rack_attributes = {
-        "barcode": tube_rack_barcode,
-        "purpose_uuid": "1234",
-        "study_uuid": "5678",
-        "tubes": {
-            "A01": {"barcode": "TB123", "content": {"supplier_name": "xyz123",},},
-            "A02": {"barcode": "TB456", "content": {"supplier_name": "xyz456",},},
-        },
-    }
-    body = {"data": {"attributes": tube_rack_attributes}}
-
-    assert create_tube_rack_body(tube_rack_barcode, mlwh_results, "1234", "5678") == body
