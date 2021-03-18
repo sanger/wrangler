@@ -1,12 +1,21 @@
 # Wrangler
 
-![CI python](https://github.com/sanger/wrangler/workflows/CI%20python/badge.svg)
-![CI docker](https://github.com/sanger/wrangler/workflows/CI%20docker/badge.svg)
+![CI](https://github.com/sanger/wrangler/workflows/python%20CI/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/gh/sanger/wrangler/branch/develop/graph/badge.svg)](https://codecov.io/gh/sanger/wrangler)
 
 A micro service to lookup and parse a CSV file named after a tube rack barcode provided and return the data in the CSV
 if found
+
+## Table of Contents
+
+- [Requirements](#requirements)
+- [Setup](#setup)
+- [Running](#running)
+- [Testing](#testing)
+- [Type checking](#type-checking)
+- [Contributing](#contributing)
+- [Releases](#releases)
 
 The routes of the service are:
 
@@ -70,4 +79,5 @@ This project uses [black](https://github.com/psf/black) to check for code format
 
 ## Releases
 
-Update `.release-version` with major/minor/patch. On merging a pull request into develop or master, a release will be created with the release version as the tag/name
+Update `.release-version` with major/minor/patch. On merging a pull request into develop or master, a release will be
+created with the release name being the version and the tag will be `v<version_number>`.
