@@ -7,7 +7,6 @@ verify_ssl = true
 flake8 = "*"
 coverage = {extras = ["toml"],version = "*"}
 pytest-cov = "*"
-rope = "*"
 pytest = "*"
 black = "*"
 flake8-bugbear = "*"
@@ -16,12 +15,9 @@ pytest-mock = "*"
 
 [packages]
 flask = "~=1.1"
-python-dotenv = "~=0.12"
 gunicorn = "~=20.0"
-mysql-connector-python = "~=8.0"
 colorlog = "~=4.1"
 slackclient = "~=2.6"
-apscheduler = "~=3.6"
 
 [requires]
 python_version = "3.8"

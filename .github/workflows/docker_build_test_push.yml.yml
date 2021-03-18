@@ -1,18 +1,19 @@
-name: CI docker
+name: Docker - build, test and push
 
 on:
-  push:
+  pull_request:
     branches:
       - develop
       - master
-    paths-ignore:
-      - "README.md"
+  push:
+    tags:
+      - v*
 
 env:
   IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
 
 jobs:
-  build_and_test_job:
+  build_test_push:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
