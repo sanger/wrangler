@@ -15,7 +15,7 @@ pytest-mock = "*"
 
 [packages]
 flask = "~=1.1"
-gunicorn = "~=20.0"
+gunicorn = "~=20.1"
 colorlog = "~=4.1"
 slackclient = "~=2.6"
 
