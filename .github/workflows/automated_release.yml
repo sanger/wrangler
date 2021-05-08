@@ -1,4 +1,4 @@
-name: Automated build, test, release and push
+name: Automated release and build
 
 on:
   push:
@@ -11,11 +11,11 @@ env:
 
 jobs:
   build_test_release_push:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build and tag the image for testing and release
+      - name: Build and tag the image for testing
         run: >-
           docker build .
           --file Dockerfile
@@ -25,6 +25,8 @@ jobs:
         run: >-
           docker run
           --network host
+          --env SETTINGS_PATH=config/test.py
+          --entrypoint=""
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
           python -m pytest --no-cov -vx
 
@@ -33,15 +35,13 @@ jobs:
         run: echo "RELEASE_VERSION=$([ ${GITHUB_REF##*/} = "develop" ] && printf '%s\n' $(cat .release-version)-develop || printf '%s\n' $(cat .release-version))" >> $GITHUB_ENV
 
       - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ env.RELEASE_VERSION }}
+          tag_name: v${{ env.RELEASE_VERSION }}
+          prerelease: ${{ !(github.ref == 'refs/heads/master') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ env.RELEASE_VERSION }}
-          release_name: ${{ env.RELEASE_VERSION }}
-          draft: false
-          prerelease: ${{ !(github.ref == 'refs/heads/master') }}
 
       - name: Login to registry
         run: >-
@@ -56,7 +56,11 @@ jobs:
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
           docker.pkg.github.com/${IMAGE_NAME}:${{ env.RELEASE_VERSION }}
 
-      - name: Push all tagged images in the repository
+      - name: Push release tag image to registry
         run: >-
-          docker push --all-tags
-          docker.pkg.github.com/${IMAGE_NAME}
+          docker push docker.pkg.github.com/${IMAGE_NAME}:${{ env.RELEASE_VERSION }}
+
+      - name: Remove the oldest package
+        uses: actions/delete-package-versions@v1
+        with:
+          package-name: "${{ github.event.repository.name }}"
