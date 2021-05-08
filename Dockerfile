@@ -8,7 +8,12 @@ FROM python:3.8-alpine
 ENV PYTHONUNBUFFERED 1
 
 # Install only the required packaged
-RUN apk add --no-cache bash bash-doc gcc musl-dev
+RUN apk add --no-cache \
+    bash \
+    bash-doc \
+    curl \
+    gcc \
+    musl-dev
 
 # Install the package manager - pipenv
 RUN pip install --upgrade pip
