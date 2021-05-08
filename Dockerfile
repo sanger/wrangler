@@ -41,3 +41,7 @@ COPY . .
 # have a look in .flaskenv for configured run options
 ENTRYPOINT ["flask"]
 CMD ["run"]
+
+# https://docs.docker.com/engine/reference/builder/#healthcheck
+HEALTHCHECK --interval=30s --timeout=5s \
+    CMD curl -Lf http://localhost:8000/health || exit 1
