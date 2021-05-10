@@ -144,3 +144,6 @@ static
 
 # editor
 .idea/
+
+# talisman
+.talismanrc

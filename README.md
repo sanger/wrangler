@@ -1,83 +1,117 @@
 # Wrangler
 
-![CI](https://github.com/sanger/wrangler/workflows/python%20CI/badge.svg)
+![CI](https://github.com/sanger/wrangler/workflows/CI/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/gh/sanger/wrangler/branch/develop/graph/badge.svg)](https://codecov.io/gh/sanger/wrangler)
 
 A micro service to lookup and parse a CSV file named after a tube rack barcode provided and return the data in the CSV
-if found
-
-## Table of Contents
-
-- [Requirements](#requirements)
-- [Setup](#setup)
-- [Running](#running)
-- [Testing](#testing)
-- [Type checking](#type-checking)
-- [Contributing](#contributing)
-- [Releases](#releases)
+if found.
 
 The routes of the service are:
 
     Endpoint                           Methods  Rule
-        ---------------------------------  -------  ------------------------------
-        racks.get_tubes_from_rack_barcode  GET      /tube_rack/<tube_rack_barcode>
-        static                             GET      /static/<path:filename>
+    ---------------------------------  -------  ------------------------------
+    health_check                       GET      /health
+    racks.get_tubes_from_rack_barcode  GET      /tube_rack/<tube_rack_barcode>
+    static                             GET      /static/<path:filename>
 
-## Requirements
+## Table of Contents
 
-* [pyenv](https://github.com/pyenv/pyenv)
-* [pipenv](https://pipenv.pypa.io/en/latest/)
+<!-- toc -->
 
-## Setup
+- [Requirements for Development](#requirements-for-development)
+  * [Configuring Environment](#configuring-environment)
+  * [Setup Steps](#setup-steps)
+- [Running](#running)
+- [Testing](#testing)
+  * [Running Tests](#running-tests)
+- [Formatting, Linting and Type Checking](#formatting-linting-and-type-checking)
+  * [Formatting](#formatting)
+  * [Linting](#linting)
+  * [Type Checking](#type-checking)
+- [Deployment](#deployment)
+- [Miscellaneous](#miscellaneous)
+  * [Updating the Table of Contents](#updating-the-table-of-contents)
 
-* Use pyenv or something similar to install the version of python
-defined in the `Pipfile`:
-  1. `brew install pyenv`
-  2. `pyenv install <python_version>`
-* Use pipenv to install python packages: `brew install pipenv`
-* To install the required packages (and dev packages) run: `pipenv install --dev`
+<!-- tocstop -->
 
-## Running
+## Requirements for Development
 
-1. Create a `.env` file with the following contents (or use `.env.example` - rename to `.env`):
-    * `FLASK_APP=wrangler`
-    * `FLASK_ENV=development`
-    * `SETTINGS_PATH=config/development.py`
+The following tools are required for development:
 
-1. To setup the database and table (schema defined in 'sql/schema.sql'):
+- python (use `pyenv` or something similar to install the python version specified in the `Pipfile`)
+- Git hooks are executed using [lefthook](https://github.com/evilmartians/lefthook), install
+  lefthook using homebrew and add the pre-commit and pre-push hooks as follows:
 
-        flask init-db
+      lefthook add pre-commit
+      lefthook add pre-push
+- [talisman](https://github.com/thoughtworks/talisman) is used as a credentials checker, to ignore
+  files which it triggers as false positives, follow the instructions in the git commit output by
+  adding the files to be ignore to a `.talismanrc` file and try commit again.
 
-1. Enter the python virtual environment using:
+### Configuring Environment
+
+Create a `.env` file (or copy the `.env.example` file) with the following values:
+
+    SETTINGS_PATH=config/development.py
+
+### Setup Steps
+
+1. Create and enter the virtual environment:
 
         pipenv shell
 
-1. Run the app using:
+1. Install the required dependencies:
 
-        flask run
+        pipenv install --dev
 
-__NB:__ When adding or changing environmental variables, remember to exit and re-enter the virtual
-environment.
+## Running
+
+To run the service:
+
+    flask run
 
 ## Testing
 
-1. Run the tests using pytest (flags are for verbose, exit early and capture output):
+### Running Tests
 
-        python -m pytest -vsx
+To run the test suite:
 
-__NB__: Make sure to be in the virtual environment (`pipenv shell`) before running the tests:
+    python -m pytest -vx
 
-## Type checking
+## Formatting, Linting and Type Checking
 
-Type checking is done using mypy, to run it, execute `mypy .`
+### Formatting
 
-## Contributing
+This project is formatted using [black](https://github.com/psf/black). To run formatting checks,
+run:
 
-This project uses [black](https://github.com/psf/black) to check for code format, the use it run:
-`black .`
+    pipenv run black .
 
-## Releases
+### Linting
 
-Update `.release-version` with major/minor/patch. On merging a pull request into develop or master, a release will be
-created with the release name being the version and the tag will be `v<version_number>`.
+This project is linted using [flake8](https://github.com/pycqa/flake8). To lint the code, run:
+
+    pipenv run flake8
+
+### Type Checking
+
+This project uses static type checking provided by the [mypy](https://github.com/python/mypy)
+library, to run manually:
+
+    pipenv run mypy .
+
+## Deployment
+
+This project uses a Docker image as the unit of deployment. The image is created by GitHub actions.
+To trigger the creation of a new image, increment the `.release-version` version with the
+corresponding change according to [semver](https://semver.org/).
+
+## Miscellaneous
+
+### Updating the Table of Contents
+
+To update the table of contents after adding things to this README you can use the [markdown-toc](https://github.com/jonschlinkert/markdown-toc)
+node module. To run:
+
+    npx markdown-toc -i README.md
