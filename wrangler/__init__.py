@@ -1,5 +1,6 @@
 import logging
 import logging.config
+from http import HTTPStatus
 
 from flask import Flask
 
@@ -23,5 +24,9 @@ def create_app(test_config_path: str = None) -> Flask:
     from wrangler.blueprints import racks
 
     app.register_blueprint(racks.bp)
+
+    @app.route("/health")
+    def health_check():
+        return "Factory working", HTTPStatus.OK
 
     return app

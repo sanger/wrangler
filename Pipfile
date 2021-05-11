@@ -4,19 +4,19 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-flake8 = "*"
-coverage = {extras = ["toml"],version = "*"}
-pytest-cov = "*"
-pytest = "*"
 black = "*"
+coverage = {extras = ["toml"],version = "*"}
+flake8 = "*"
 flake8-bugbear = "*"
 mypy = "*"
-pytest-mock = "*"
+pytest = "*"
+pytest-cov = "*"
 
 [packages]
+colorlog = "~=4.1"
 flask = "~=1.1"
 gunicorn = "~=20.0"
-colorlog = "~=4.1"
+python-dotenv = "~=0.17"
 slackclient = "~=2.6"
 
 [requires]
@@ -27,6 +27,6 @@ allow_prereleases = true
 
 [scripts]
 black = 'black'
-mypy = 'mypy'
 flake8 = 'flake8'
-test = 'python -m pytest -vx'
+mypy = 'mypy'
+test = 'python -m pytest -v'
