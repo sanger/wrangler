@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2db9f84de1e307933142f475edd7c44b5bccdb598cb0788ff3de73c5df3705dc"
+            "sha256": "f58813735eed4e25da35d5b33dc7cafef24de9ca43c5ae9a01ad2bf18ac672ed"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -334,11 +334,11 @@
         },
         "black": {
             "hashes": [
-                "sha256:0e80435b8a88f383c9149ae89d671eb2095b72344b0fe8a1d61d2ff5110ed173",
-                "sha256:9dc2042018ca10735366d944c2c12d9cad6dec74a3d5f679d09384ea185d9943"
+                "sha256:23695358dbcb3deafe7f0a3ad89feee5999a46be5fec21f4f1d108be0bcdb3b1",
+                "sha256:8a60071a0043876a4ae96e6c69bd3a127dad2c1ca7c8083573eb82f92705d008"
             ],
             "index": "pypi",
-            "version": "==21.5b0"
+            "version": "==21.5b1"
         },
         "click": {
             "hashes": [
@@ -411,11 +411,11 @@
         },
         "flake8": {
             "hashes": [
-                "sha256:1aa8990be1e689d96c745c5682b687ea49f2e05a443aff1f8251092b0014e378",
-                "sha256:3b9f848952dddccf635be78098ca75010f073bfe14d2c6bda867154bea728d2a"
+                "sha256:07528381786f2a6237b061f6e96610a4167b226cb926e2aa2b6b1d78057c576b",
+                "sha256:bf8fd333346d844f616e8d47905ef3a3384edae6b4e9beb0c5101e25e3110907"
             ],
             "index": "pypi",
-            "version": "==3.9.1"
+            "version": "==3.9.2"
         },
         "flake8-bugbear": {
             "hashes": [

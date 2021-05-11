@@ -17,7 +17,7 @@ RUN apk add --no-cache \
 
 # Install the package manager - pipenv
 RUN pip install --upgrade pip
-RUN pip install pipenv
+RUN pip install --no-cache-dir pipenv
 
 # Change the working directory for all proceeding operations
 #   https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#workdir
@@ -25,14 +25,14 @@ WORKDIR /code
 
 # "items (files, directories) that do not require ADD’s tar auto-extraction capability, you should always use COPY."
 #   https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#add-or-copy
-# COPY Pipfile /code/
-COPY Pipfile.lock /code/
+COPY Pipfile .
+COPY Pipfile.lock .
 
 # Install both default and dev packages so that we can run the tests against this image
-# RUN pipenv install --dev --ignore-pipfile --system --deploy
-RUN pipenv sync --dev --system
+RUN pipenv sync --dev --system && \
+    pipenv --clear
 
-# # Copy all the source to the image
+# Copy all the source to the image
 COPY . .
 
 # "The best use for ENTRYPOINT is to set the image’s main command, allowing that image to be run as though it was that
