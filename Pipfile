@@ -13,7 +13,7 @@ pytest = "*"
 pytest-cov = "*"
 
 [packages]
-colorlog = "~=4.1"
+colorlog = "~=6.5"
 flask = "~=1.1"
 gunicorn = "~=20.0"
 python-dotenv = "~=0.17"
