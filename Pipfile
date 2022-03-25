@@ -16,7 +16,7 @@ pytest-cov = "*"
 colorlog = "~=4.1"
 flask = "~=1.1"
 gunicorn = "~=20.0"
-python-dotenv = "~=0.17"
+python-dotenv = "~=0.20"
 slackclient = "~=2.6"
 
 [requires]
