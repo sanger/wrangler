@@ -3,7 +3,7 @@
 ###
 # A little bash script to ease the formatting and linting burden
 #
-# run by: ./format_type_lint.sh
+# run by: ./forlint.sh
 ###
 echo "Running 'black .' on all files using the config in pyproject.toml ..."
 black .
