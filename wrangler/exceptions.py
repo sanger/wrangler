@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 class Error(Exception):
     """Base class for exceptions in this module."""
 
@@ -5,7 +8,7 @@ class Error(Exception):
 
 
 class CsvNotFoundError(Error):
-    def __init__(self, tube_rack_barcode: str, message: str = None):
+    def __init__(self, tube_rack_barcode: str, message: Optional[str] = None):
         """Raised when a CSV file named after a tube rack barcode is not found in the NFS.
 
         Arguments:
