@@ -1,13 +1,14 @@
 import logging
 import logging.config
 from http import HTTPStatus
+from typing import Optional
 
 from flask import Flask
 
 logger = logging.getLogger(__name__)
 
 
-def create_app(test_config_path: str = None) -> Flask:
+def create_app(test_config_path: Optional[str] = None) -> Flask:
     app = Flask(__name__, instance_relative_config=False)
 
     if test_config_path is None:
