@@ -66,7 +66,6 @@ def test_parse_tube_rack_csv(app):
 
 def test_parse_tube_rack_csv_ignores_no_read(app, client, tmpdir):
     with app.app_context():
-
         expected_output = {
             "rack_barcode": "DN_48_no_read",
             "layout": {"FR05653780": "A1", "FR05653808": "A2", "FR05653801": "F8"},
