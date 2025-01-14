@@ -19,7 +19,7 @@ gunicorn = "~=23.0"
 python-dotenv = "~=1.0"
 slackclient = "~=2.6"
 markupsafe = "==2.1.5"
-click = "~=8.0"
+click = "~=8.1"
 types-flask = "*"
 
 [requires]
