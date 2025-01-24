@@ -24,7 +24,7 @@ types-flask = "*"
 typing_extensions = "*"
 
 [requires]
-python_version = "$(cat .python-version)"
+python_version = "3.13"
 
 [pipenv]
 allow_prereleases = true
