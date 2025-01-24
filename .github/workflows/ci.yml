@@ -90,10 +90,10 @@ jobs:
           pip install pipenv
       - name: Install dependencies
         run: |
-          pipenv install --dev
+          pipenv sync --dev --system
       - name: Run mypy
         run: |
-          pipenv run python -m mypy .
+          python -m mypy .
   test:
     runs-on: ubuntu-latest
     needs: setup
