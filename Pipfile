@@ -21,7 +21,6 @@ slackclient = "~=2.6"
 markupsafe = "==2.1.5"
 click = "~=8.1"
 types-flask = "*"
-typing_extensions = "*"
 
 [requires]
 python_version = "$(cat .python-version)"
