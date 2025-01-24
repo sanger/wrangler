@@ -23,7 +23,7 @@ click = "~=8.1"
 types-flask = "*"
 
 [requires]
-python_version = "3.13"
+python_version = "$(cat .python-version)"
 
 [pipenv]
 allow_prereleases = true
