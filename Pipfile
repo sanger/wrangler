@@ -4,7 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-black = "==24.3.0"
+black = "==25.1.0"
 coverage = {extras = ["toml"],version = "*"}
 flake8 = "*"
 flake8-bugbear = "*"
@@ -13,17 +13,18 @@ pytest = "*"
 pytest-cov = "*"
 
 [packages]
-colorlog = "~=6.8"
+colorlog = "~=6.9"
 flask = "~=3.0"
-gunicorn = "~=21.2"
+gunicorn = "~=23.0"
 python-dotenv = "~=1.0"
 slackclient = "~=2.6"
 markupsafe = "==2.1.5"
-click = "~=8.0"
+click = "~=8.1"
 types-flask = "*"
+typing_extensions = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.13"
 
 [pipenv]
 allow_prereleases = true
